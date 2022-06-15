@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     for (size_t idx = 0; idx < contours.size(); idx++)
     {
         std::vector<cv::Point> approx;
-        cv::approxPolyDP(contours[idx], approx, 0.01*cv::arcLength(contours[idx], true), true);
+        cv::approxPolyDP(contours[idx], approx, 0.01 * cv::arcLength(contours[idx], true), true);
         if (cv::contourArea(contours[idx]) > 500)
         {
             // detect squres
@@ -100,28 +100,30 @@ int targetCentre(cv::Mat &img, cv::Point &center)
     std::vector<cv::Vec3f> circles;
 
     cv::HoughCircles(blur_img, circles, cv::HOUGH_GRADIENT, 1,
-                    blur_img.rows / 1, // change this value to detect circles with different distances to each other
-                    200, 200, 100, 400 // change the last two parameters
-                                    // (min_radius & max_radius) to detect larger circles
+                     blur_img.rows / 1, // change this value to detect circles with different distances to each other
+                     200, 200, 100, 400 // change the last two parameters
+                                        // (min_radius & max_radius) to detect larger circles
     );
-    // TODO finish the safety of the function 
+    // TODO finish the safety of the function
     if (!circles.size())
+    {
         return 1;
-    
+    }
+
     for (size_t i = 0; i < circles.size(); i++)
     {
         cv::Vec3i c = circles[i];
         center = cv::Point(c[0], c[1]);
-        return 0;
         // draw circle center
         // circle(img, center, 1, LIGHTGREEN, 3, cv::LINE_AA);
         // draw circle outline
         // int radius = c[2];
         // circle(img, center, radius, cv::Scalar(204, 0, 0), 3, cv::LINE_AA);
     }
+    return 0;
 }
 
-void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar &color=RED)
+void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar &color = RED)
 {
     // Iterate over each segment and draw it
     auto itp = approximation.begin();

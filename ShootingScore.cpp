@@ -63,27 +63,21 @@ ShootingScore::ShootingScore(std::string model_img_path, std::string src_img_pat
         return;
     }
 
+    // three images are required
     model_img = cv::imread(model_img_path);
     src_img = cv::imread(src_img_path);
     last_img = cv::imread(last_img_path);
 
+    // prepare images
     prepareImage(model_img, model_img_greyscale, model_img_blur, model_img_thresh);
     prepareImage(src_img, src_img_greyscale, src_img_blur, src_img_thresh);
     prepareImage(last_img, last_img_greyscale, last_img_blur, last_img_thresh);
 
-    cv::findContours(model_img_thresh, model_img_contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
-
     cv::Mat tmp(src_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
     result_plot = tmp;
-
-    // cv::imshow("threshold image", src_img_blur);
-    // cv::waitKey(0);
-    // cv::destroyAllWindows();
 }
 
-ShootingScore::~ShootingScore()
-{
-}
+ShootingScore::~ShootingScore() {}
 
 void ShootingScore::prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh)
 {
@@ -121,13 +115,14 @@ void ShootingScore::getShotContours()
 
     // obtain contours of the diff (shot)
     cv::findContours(img_diff, shot_contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
-
 }
 
 void ShootingScore::detectTargetBoard()
 {
-    // initialise a matrix for storing result
-    // cv::Mat contour_img(model_img_thresh.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    // detect contour from the target model
+    cv::findContours(model_img_thresh, model_img_contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+
+    // TODO safety check: loop
     for (size_t idx = 0; idx < model_img_contours.size(); idx++)
     {
         std::vector<cv::Point> approx;
@@ -144,15 +139,9 @@ void ShootingScore::detectTargetBoard()
             else if (approx.size() >= 10)
             {
                 cv::drawContours(result_plot, model_img_contours, idx, GREY, 3);
-
-                // drawPolyDP(result_plot, approx, RED);
             }
         }
     }
-
-    // cv::imshow("Contoured Image", result_plot);
-    // cv::waitKey(0);
-    // cv::destroyAllWindows();
 }
 
 int ShootingScore::computeTargetCentre()
@@ -166,8 +155,8 @@ int ShootingScore::computeTargetCentre()
 
     cv::HoughCircles(img_blur_tmp, circles, cv::HOUGH_GRADIENT, 1,
                      img_blur_tmp.rows / 1, // change this value to detect circles with different distances to each other
-                     200, 200, 100, 400       // change the last two parameters
-                                              // (min_radius & max_radius) to detect larger circles
+                     200, 200, 100, 400     // change the last two parameters
+                                            // (min_radius & max_radius) to detect larger circles
     );
     // TODO finish the safety check of the function
     if (!circles.size())
@@ -191,8 +180,7 @@ int ShootingScore::computeTargetCentre()
 
 void ShootingScore::drawShootingResult()
 {
-    // initialise a matrix for storing result
-    // cv::Mat result_plot(src_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    // TODO safety check: loop
 
     cv::circle(result_plot, target_centre, 1, LIGHTGREEN, 3, cv::LINE_AA);
 
@@ -205,7 +193,6 @@ void ShootingScore::drawShootingResult()
     cv::imshow("shot", result_plot);
     cv::waitKey(0);
     cv::destroyAllWindows();
-
 }
 
 void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar &color = RED)
@@ -236,7 +223,7 @@ int imageExists(std::string img_path)
 int main(int argc, char const *argv[])
 {
     /* code */
-    ShootingScore *ss = new ShootingScore("../test_img_1/aligned_shot_0.JPG", "../test_img_1/aligned_shot_3.JPG", "../test_img_1/aligned_shot_2.JPG");
+    ShootingScore *ss = new ShootingScore("../test_img_1/aligned_shot_0.JPG", "../test_img_1/aligned_shot_1.JPG", "../test_img_1/aligned_shot_0.JPG");
     ss->computeTargetCentre();
     ss->detectTargetBoard();
     ss->getShotContours();

@@ -14,6 +14,9 @@ cv::Scalar WHITE(255, 255, 255);
 cv::Scalar BLACK(0, 0, 0);
 cv::Scalar BACKGROUNDCOLOR(32, 32, 32);
 
+void contourImage(cv::Mat &img, cv::Mat &img_contoured);
+void diffInImages(cv::Mat &img1, cv::Mat &img2);
+
 int imgExist(const char *img_path);
 void displayImage(cv::Mat &img, const std::string window_name);
 void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar &color);
@@ -23,20 +26,22 @@ int main(int argc, char **argv)
 {
 
     // check command line arguments
-    if (argc != 2)
+    if (argc != 3)
     {
-        std::cout << "Expecting a image file to be passed to program" << std::endl;
+        std::cout << "Expecting both image files to be passed to program" << std::endl;
         return -1;
     }
 
     // check path
-    if (imgExist(argv[1]) != 0)
+    if (imgExist(argv[1]) != 0 or imgExist(argv[2]) != 0)
     {
         return -1;
     }
 
     // read the image
     cv::Mat src_img = cv::imread(argv[1]);
+    cv::Mat last_img = cv::imread(argv[2]);
+    /*
     cv::Mat greyscale_img;
     cv::Mat threshold_img;
 
@@ -83,12 +88,58 @@ int main(int argc, char **argv)
     // display image in windows
     cv::imshow("Testing Image", src_img);
     cv::imshow("Contoured Image", contour_img);
+    
+    */
+    diffInImages(src_img, last_img);
     // cv::imshow("detected circles", src_img);
 
     cv::waitKey(0);
     cv::destroyAllWindows();
 
     return 0;
+}
+
+void diffInImages(cv::Mat &img1, cv::Mat &img2)
+{
+    cv::Mat img1_processed, img2_processed, img_diff;
+    img1_processed = img1.clone();
+    img2_processed = img2.clone();
+    std::vector<std::vector<cv::Point>> contours;
+    // std::vector<std::vector<cv::Point>> contours1;
+    // cv::Mat img1_contoured(img1.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    // cv::Mat img2_contoured(img1.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    cv::Mat diff_contoured(img1.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+
+    contourImage(img1, img1_processed);
+    contourImage(img2, img2_processed);
+    
+    // cv::medianBlur(img1, img1_processed, 15);
+    // cv::adaptiveThreshold(img1_processed, img1_processed, 200, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 11, 3);
+
+    // cv::medianBlur(img2, img2_processed, 15);
+    // cv::adaptiveThreshold(img2_processed, img2_processed, 200, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 11, 3);
+
+    cv::absdiff(img1_processed, img2_processed, img_diff); 
+    // cv::GaussianBlur(img_diff, img_diff, cv::Size(15, 15), 0);
+    cv::threshold(img_diff, img_diff, 150, 255, cv::THRESH_BINARY_INV);
+    cv::findContours(img_diff, contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+    for (size_t idx = 0; idx < contours.size(); idx++)
+    {
+        cv::drawContours(diff_contoured, contours, idx, RED, 3);
+    }
+    cv::imshow("Contoured Image", diff_contoured);
+}
+
+void contourImage(cv::Mat &img, cv::Mat &img_processed)
+{
+    // cv::Mat img_processed;
+    std::vector<std::vector<cv::Point>> contours;
+
+    cv::cvtColor(img, img_processed, cv::COLOR_BGR2GRAY);
+    cv::GaussianBlur(img_processed, img_processed, cv::Size(15, 15), 0);
+    // cv::adaptiveThreshold(img_processed, img_processed, 200, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 11, 3);
+    // cv::GaussianBlur(img_processed, img_processed, cv::Size(25, 25), 0);
+    
 }
 
 int targetCentre(cv::Mat &img, cv::Point &center)
@@ -104,7 +155,7 @@ int targetCentre(cv::Mat &img, cv::Point &center)
                      200, 200, 100, 400 // change the last two parameters
                                         // (min_radius & max_radius) to detect larger circles
     );
-    // TODO finish the safety of the function
+    // TODO finish the safety check of the function
     if (!circles.size())
     {
         return 1;

@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION "3.23")
 
 # name of the project
-project(ShootingScore)
+project(shooting_score)
 
 # set OpenCV_DIR variable equal to the path to the cmake
 # files within the previously installed opencv program
@@ -24,7 +24,10 @@ find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # specify the executable target to be built
-add_executable(ShootingScore ShootingScore.cpp)
+add_executable(main main.cpp)
 
 # tell it to link the executable target against OpenCV
-target_link_libraries(ShootingScore ${OpenCV_LIBS} )
+target_link_libraries(main ${OpenCV_LIBS} ShootingScore)
+
+# add library that compute shooting score
+add_library(ShootingScore ShootingScore.cpp)

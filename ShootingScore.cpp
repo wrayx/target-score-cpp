@@ -1,59 +1,14 @@
-#include <iostream>
-#include <opencv2/core.hpp>
-#include <opencv2/opencv.hpp>
-#include <opencv2/imgproc.hpp>
+#include "ShootingScore.hpp"
 
 cv::Scalar GREEN(69, 255, 83);
 cv::Scalar LIGHTGREEN(204, 255, 204);
-cv::Scalar GREY(110, 110, 110);
+cv::Scalar GREY(80, 80, 80);
 cv::Scalar RED(67, 57, 249);
 cv::Scalar DARKRED(0, 0, 255);
 cv::Scalar DARKGREEN(28, 168, 23);
 cv::Scalar WHITE(255, 255, 255);
 cv::Scalar BLACK(0, 0, 0);
 cv::Scalar BACKGROUNDCOLOR(32, 32, 32);
-
-void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar &color);
-int imageExists(std::string img_path);
-
-class ShootingScore
-{
-private:
-    /* data */
-    cv::Mat src_img;
-    cv::Mat src_img_greyscale;
-    cv::Mat src_img_blur;
-    cv::Mat src_img_thresh;
-
-    cv::Mat last_img;
-    cv::Mat last_img_greyscale;
-    cv::Mat last_img_blur;
-    cv::Mat last_img_thresh;
-
-    cv::Mat model_img;
-    cv::Mat model_img_greyscale;
-    cv::Mat model_img_blur;
-    cv::Mat model_img_thresh;
-
-    std::vector<std::vector<cv::Point>> model_img_contours;
-    std::vector<std::vector<cv::Point>> shot_contours;
-
-    void prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh);
-
-public:
-    cv::Point target_centre;
-    cv::Point shotLocation;
-    cv::Mat result_plot;
-    double score;
-
-    ShootingScore(std::string model_img_path, std::string src_img_path, std::string last_img_path);
-    ~ShootingScore();
-
-    void getShotContours();
-    int computeTargetCentre();
-    void detectTargetBoard();
-    void drawShootingResult();
-};
 
 ShootingScore::ShootingScore(std::string model_img_path, std::string src_img_path, std::string last_img_path)
 {
@@ -127,19 +82,32 @@ void ShootingScore::detectTargetBoard()
     {
         std::vector<cv::Point> approx;
         cv::approxPolyDP(model_img_contours[idx], approx, 0.01 * cv::arcLength(model_img_contours[idx], true), true);
-        if (cv::contourArea(model_img_contours[idx]) > 500)
+        
+        // if (cv::contourArea(model_img_contours[idx]) > 500)
+        // {
+        //     // detect squres
+        //     if (approx.size() == 4)
+        //     {
+        //         drawPolyDP(result_plot, approx, LIGHTGREEN);
+        //         // TODO transform the image by the squre shape
+        //     }
+        //     // detect circles
+        //     else if (approx.size() >= 10)
+        //     {
+        //         cv::drawContours(result_plot, model_img_contours, idx, GREY, 3);
+        //     }
+        // }
+
+        // detect squres
+        // if (approx.size() == 4)
+        // {
+        //     drawPolyDP(result_plot, approx, LIGHTGREEN);
+        //     // TODO transform the image by the squre shape
+        // }
+        // detect other shapes (numbers, circles)
+        if (approx.size() >= 10 and cv::contourArea(model_img_contours[idx]) > 10)
         {
-            // detect squres
-            if (approx.size() == 4)
-            {
-                drawPolyDP(result_plot, approx, LIGHTGREEN);
-                // TODO transform the image by the squre shape
-            }
-            // detect circles
-            else if (approx.size() >= 10)
-            {
-                cv::drawContours(result_plot, model_img_contours, idx, GREY, 3);
-            }
+            cv::drawContours(result_plot, model_img_contours, idx, GREY, 3);
         }
     }
 }
@@ -155,7 +123,7 @@ int ShootingScore::computeTargetCentre()
 
     cv::HoughCircles(img_blur_tmp, circles, cv::HOUGH_GRADIENT, 1,
                      img_blur_tmp.rows / 1, // change this value to detect circles with different distances to each other
-                     200, 200, 100, 400     // change the last two parameters
+                     200, 200, 400, 800     // change the last two parameters
                                             // (min_radius & max_radius) to detect larger circles
     );
     // TODO finish the safety check of the function
@@ -168,12 +136,10 @@ int ShootingScore::computeTargetCentre()
     {
         cv::Vec3i c = circles[i];
         target_centre = cv::Point(c[0], c[1]);
+        total_radius = c[2];
         // std::cout << target_centre << std::endl;
         // draw circle center
         // circle(img, center, 1, LIGHTGREEN, 3, cv::LINE_AA);
-        // draw circle outline
-        // int radius = c[2];
-        // circle(img, center, radius, cv::Scalar(204, 0, 0), 3, cv::LINE_AA);
     }
     return 0;
 }
@@ -182,17 +148,89 @@ void ShootingScore::drawShootingResult()
 {
     // TODO safety check: loop
 
-    cv::circle(result_plot, target_centre, 1, LIGHTGREEN, 3, cv::LINE_AA);
+    // constract string
+    std::string s0 = "CENTRE ";
+    std::string s1 = "(";
+    std::string s2 = ", ";
+    std::string s3 = ")";
+    std::stringstream ss;
+
+    // draw target centre
+    cv::circle(result_plot, target_centre, 2, LIGHTGREEN, 3, cv::LINE_AA);
+
+    // add target centre location values
+    ss << s0 << s1 << target_centre.x << s2 << target_centre.y << s3;
+    cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y), cv::FONT_HERSHEY_SIMPLEX, 1, LIGHTGREEN, 3);
+    ss.str(std::string());
+
+    // draw circle outline
+    circle(result_plot, target_centre, total_radius, LIGHTGREEN, 4, cv::LINE_AA);
 
     // draw shot contour
-    for (size_t idx = 0; idx < shot_contours.size(); idx++)
-    {
-        cv::drawContours(result_plot, shot_contours, idx, RED, 3);
-    }
+    // for (size_t idx = 0; idx < shot_contours.size(); idx++)
+    // {
+    //     cv::drawContours(result_plot, shot_contours, idx, RED, 3);
+    // }
+
+    // draw shot location (centre point)
+    // cv::circle(result_plot, shot_location, 2, WHITE, 3, cv::LINE_AA);
+    cv::drawMarker(result_plot, shot_location, WHITE, cv::MARKER_CROSS, 20, 3);
+
+    // add shot location values
+    s0 = "LOC ";
+    ss << s0 << s1 << shot_location.x << s2 << shot_location.y << s3;
+    cv::putText(result_plot, ss.str(), cv::Point(shot_location.x + 20, shot_location.y), cv::FONT_HERSHEY_SIMPLEX, 1, WHITE, 3);
+    ss.str(std::string());
+
+    // add scores
+    s1 = "SCORE: ";
+    ss << s1 << std::fixed << std::setprecision(2) << score;
+    cv::putText(result_plot, ss.str(), cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1, WHITE, 3);
+
+    // TODO get output path as an argument
+    cv::imwrite("../output/output.png", result_plot);
 
     cv::imshow("shot", result_plot);
     cv::waitKey(0);
     cv::destroyAllWindows();
+}
+
+/* uses shot contours to cumpute the shot location */
+void ShootingScore::computeShotLocation()
+{
+    shot_location = cv::Point(0, 0);
+
+    // as the shot contour can be irregular,
+    // we need consider all shapes,
+    // and compute the actual centre of all contours
+    for (auto &&contour : shot_contours)
+    {
+        cv::Point contour_centre;
+        getContourCentre(contour, contour_centre);
+        shot_location.x = shot_location.x + contour_centre.x;
+        shot_location.y = shot_location.y + contour_centre.y;
+    }
+
+    // get a average centre of all contours
+    shot_location.x = shot_location.x / shot_contours.size();
+    shot_location.y = shot_location.y / shot_contours.size();
+}
+
+void ShootingScore::computeShootingScore()
+{
+    // compute shot distances
+    shot_distance = cv::norm(target_centre - shot_location);
+
+    double distance = total_radius / 10;
+    double num_distances = (shot_distance / distance);
+
+    score = 11 - num_distances;
+}
+
+void getContourCentre(std::vector<cv::Point> &contour, cv::Point &centre)
+{
+    cv::Moments mo = cv::moments(contour);
+    centre = cv::Point(mo.m10 / mo.m00, mo.m01 / mo.m00);
 }
 
 void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar &color = RED)
@@ -217,16 +255,5 @@ int imageExists(std::string img_path)
         std::cout << "Not a valid image file" << std::endl;
         return -1;
     }
-    return 0;
-}
-
-int main(int argc, char const *argv[])
-{
-    /* code */
-    ShootingScore *ss = new ShootingScore("../test_img_1/aligned_shot_0.JPG", "../test_img_1/aligned_shot_1.JPG", "../test_img_1/aligned_shot_0.JPG");
-    ss->computeTargetCentre();
-    ss->detectTargetBoard();
-    ss->getShotContours();
-    ss->drawShootingResult();
     return 0;
 }

@@ -27,7 +27,9 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 add_executable(main main.cpp)
 
 # tell it to link the executable target against OpenCV
-target_link_libraries(main ${OpenCV_LIBS} ShootingScore)
+target_link_libraries(main ${OpenCV_LIBS} util ShootingScore ImageAlignment)
 
 # add library that compute shooting score
 add_library(ShootingScore ShootingScore.cpp)
+add_library(ImageAlignment ImageAlignment.cpp)
+add_library(util util.cpp)

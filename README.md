@@ -9,4 +9,4 @@ cd build
 
 Output as follows: 
 
-![output](output/output.png)
+<img src="output/input.JPG" alt="output" width="50%"/><img src="output/output.png" alt="output" width="50%"/>

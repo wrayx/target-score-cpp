@@ -1,8 +1,8 @@
 #ifndef SHOOTINGSCORE_H
 #define SHOOTINGSCORE_H
 
-#include <iomanip>
 #include "util.hpp"
+#include <iomanip>
 
 class ShootingScore
 {

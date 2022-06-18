@@ -1,9 +1,11 @@
 #include "ShootingScore.hpp"
 
-ShootingScore::ShootingScore(std::string model_img_path, std::string src_img_path, std::string last_img_path)
+ShootingScore::ShootingScore(
+    std::string model_img_path, std::string src_img_path, std::string last_img_path)
 {
     // check path
-    if (util::imageExists(model_img_path) != 0 or util::imageExists(src_img_path) != 0 or util::imageExists(last_img_path) != 0)
+    if (util::imageExists(model_img_path) != 0 or util::imageExists(src_img_path) != 0 or
+        util::imageExists(last_img_path) != 0)
     {
         return;
     }
@@ -24,7 +26,8 @@ ShootingScore::ShootingScore(std::string model_img_path, std::string src_img_pat
 
 ShootingScore::~ShootingScore() {}
 
-void ShootingScore::prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh)
+void ShootingScore::prepareImage(
+    cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh)
 {
 
     // transform image into a squre ratio
@@ -43,8 +46,8 @@ void ShootingScore::prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &
 
     cv::cvtColor(img, img_greyscale, cv::COLOR_BGR2GRAY);
     cv::GaussianBlur(img_greyscale, img_blur, cv::Size(15, 15), 0);
-    cv::adaptiveThreshold(img_blur, img_thresh, 255,
-                          cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 11, 3);
+    cv::adaptiveThreshold(
+        img_blur, img_thresh, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 11, 3);
 }
 
 void ShootingScore::getShotContours()
@@ -71,8 +74,9 @@ void ShootingScore::detectTargetBoard()
     for (size_t idx = 0; idx < model_img_contours.size(); idx++)
     {
         std::vector<cv::Point> approx;
-        cv::approxPolyDP(model_img_contours[idx], approx, 0.01 * cv::arcLength(model_img_contours[idx], true), true);
-        
+        cv::approxPolyDP(model_img_contours[idx], approx,
+            0.01 * cv::arcLength(model_img_contours[idx], true), true);
+
         // if (cv::contourArea(model_img_contours[idx]) > 500)
         // {
         //     // detect squres
@@ -112,9 +116,10 @@ int ShootingScore::computeTargetCentre()
     cv::blur(model_img_greyscale, img_blur_tmp, cv::Size(3, 3));
 
     cv::HoughCircles(img_blur_tmp, circles, cv::HOUGH_GRADIENT, 1,
-                     img_blur_tmp.rows / 1, // change this value to detect circles with different distances to each other
-                     200, 200, 400, 800     // change the last two parameters
-                                            // (min_radius & max_radius) to detect larger circles
+        img_blur_tmp.rows /
+            1, // change this value to detect circles with different distances to each other
+        200, 200, 400, 800 // change the last two parameters
+                           // (min_radius & max_radius) to detect larger circles
     );
     // TODO finish the safety check of the function
     if (!circles.size())
@@ -150,7 +155,8 @@ void ShootingScore::drawShootingResult()
 
     // add target centre location values
     ss << s0 << s1 << target_centre.x << s2 << target_centre.y << s3;
-    cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y), cv::FONT_HERSHEY_SIMPLEX, 1,  util::LIGHT_GREEN, 3);
+    cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y),
+        cv::FONT_HERSHEY_SIMPLEX, 1, util::LIGHT_GREEN, 3);
     ss.str(std::string());
 
     // draw circle outline
@@ -169,13 +175,15 @@ void ShootingScore::drawShootingResult()
     // add shot location values
     s0 = "LOC ";
     ss << s0 << s1 << shot_location.x << s2 << shot_location.y << s3;
-    cv::putText(result_plot, ss.str(), cv::Point(shot_location.x + 20, shot_location.y), cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
+    cv::putText(result_plot, ss.str(), cv::Point(shot_location.x + 20, shot_location.y),
+        cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
     ss.str(std::string());
 
     // add scores
     s1 = "SCORE: ";
     ss << s1 << std::fixed << std::setprecision(2) << score;
-    cv::putText(result_plot, ss.str(), cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
+    cv::putText(
+        result_plot, ss.str(), cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
 
     // TODO get output path as an argument
     cv::imwrite("../output/output.png", result_plot);

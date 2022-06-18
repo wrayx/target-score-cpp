@@ -22,6 +22,4 @@ namespace util
     void getContourCentre(std::vector<cv::Point> &contour, cv::Point &centre);
 };
 
-
-
 #endif

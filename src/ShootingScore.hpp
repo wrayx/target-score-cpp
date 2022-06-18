@@ -4,10 +4,6 @@
 #include <iomanip>
 #include "util.hpp"
 
-// void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar &color);
-// int imageExists(std::string img_path);
-// void getContourCentre(std::vector<cv::Point> &contour, cv::Point &centre);
-
 class ShootingScore
 {
 private:

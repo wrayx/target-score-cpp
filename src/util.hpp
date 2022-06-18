@@ -1,5 +1,5 @@
-#ifndef util_H
-#define util_H
+#ifndef UTIL_H
+#define UTIL_H
 
 #include <iostream>
 #include <opencv2/opencv.hpp>

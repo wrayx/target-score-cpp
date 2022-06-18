@@ -15,13 +15,16 @@ set(OpenCV_DIR /usr/local/Cellar/opencv/4.5.5_2/include/opencv4)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_OSX_DEPLOYMENT_TARGET 12.30)
 
+# set working directory
+set(SOURCE_DIR src)
+
 # configure the necessary common CMake environment variables
 # needed to include and link the OpenCV program into this
 # demo project, namely OpenCV_INCLUDE_DIRS and OpenCV_LIBS
 find_package( OpenCV REQUIRED )
 
 # tell the build to include the headers from OpenCV
-include_directories( ${OpenCV_INCLUDE_DIRS} )
+include_directories( ${OpenCV_INCLUDE_DIRS} ${SOURCE_DIR})
 
 # specify the executable target to be built
 add_executable(main main.cpp)
@@ -30,6 +33,6 @@ add_executable(main main.cpp)
 target_link_libraries(main ${OpenCV_LIBS} util ShootingScore ImageAlignment)
 
 # add library that compute shooting score
-add_library(ShootingScore ShootingScore.cpp)
-add_library(ImageAlignment ImageAlignment.cpp)
-add_library(util util.cpp)
+add_library(ShootingScore ${SOURCE_DIR}/ShootingScore.cpp)
+add_library(ImageAlignment ${SOURCE_DIR}/ImageAlignment.cpp)
+add_library(util ${SOURCE_DIR}/util.cpp)

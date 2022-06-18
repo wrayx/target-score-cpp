@@ -2,7 +2,7 @@
 #define UTIL_H
 
 #include <iostream>
-#include <opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp> // compiler will include everything selected in CMake
 
 namespace util
 {

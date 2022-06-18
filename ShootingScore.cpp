@@ -1,19 +1,9 @@
 #include "ShootingScore.hpp"
 
-cv::Scalar GREEN(69, 255, 83);
-cv::Scalar LIGHTGREEN(204, 255, 204);
-cv::Scalar GREY(80, 80, 80);
-cv::Scalar RED(67, 57, 249);
-cv::Scalar DARKRED(0, 0, 255);
-cv::Scalar DARKGREEN(28, 168, 23);
-cv::Scalar WHITE(255, 255, 255);
-cv::Scalar BLACK(0, 0, 0);
-cv::Scalar BACKGROUNDCOLOR(32, 32, 32);
-
 ShootingScore::ShootingScore(std::string model_img_path, std::string src_img_path, std::string last_img_path)
 {
     // check path
-    if (imageExists(model_img_path) != 0 or imageExists(src_img_path) != 0 or imageExists(last_img_path) != 0)
+    if (util::imageExists(model_img_path) != 0 or util::imageExists(src_img_path) != 0 or util::imageExists(last_img_path) != 0)
     {
         return;
     }
@@ -107,7 +97,7 @@ void ShootingScore::detectTargetBoard()
         // detect other shapes (numbers, circles)
         if (approx.size() >= 10 and cv::contourArea(model_img_contours[idx]) > 10)
         {
-            cv::drawContours(result_plot, model_img_contours, idx, GREY, 3);
+            cv::drawContours(result_plot, model_img_contours, idx, util::GREY, 3);
         }
     }
 }
@@ -156,36 +146,36 @@ void ShootingScore::drawShootingResult()
     std::stringstream ss;
 
     // draw target centre
-    cv::circle(result_plot, target_centre, 2, LIGHTGREEN, 3, cv::LINE_AA);
+    cv::circle(result_plot, target_centre, 2, util::LIGHT_GREEN, 3, cv::LINE_AA);
 
     // add target centre location values
     ss << s0 << s1 << target_centre.x << s2 << target_centre.y << s3;
-    cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y), cv::FONT_HERSHEY_SIMPLEX, 1, LIGHTGREEN, 3);
+    cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y), cv::FONT_HERSHEY_SIMPLEX, 1,  util::LIGHT_GREEN, 3);
     ss.str(std::string());
 
     // draw circle outline
-    circle(result_plot, target_centre, total_radius, LIGHTGREEN, 4, cv::LINE_AA);
+    circle(result_plot, target_centre, total_radius, util::LIGHT_GREEN, 4, cv::LINE_AA);
 
     // draw shot contour
     // for (size_t idx = 0; idx < shot_contours.size(); idx++)
     // {
-    //     cv::drawContours(result_plot, shot_contours, idx, RED, 3);
+    //     cv::drawContours(result_plot, shot_contours, idx,  util::RED, 3);
     // }
 
     // draw shot location (centre point)
     // cv::circle(result_plot, shot_location, 2, WHITE, 3, cv::LINE_AA);
-    cv::drawMarker(result_plot, shot_location, WHITE, cv::MARKER_CROSS, 20, 3);
+    cv::drawMarker(result_plot, shot_location, util::WHITE, cv::MARKER_CROSS, 20, 3);
 
     // add shot location values
     s0 = "LOC ";
     ss << s0 << s1 << shot_location.x << s2 << shot_location.y << s3;
-    cv::putText(result_plot, ss.str(), cv::Point(shot_location.x + 20, shot_location.y), cv::FONT_HERSHEY_SIMPLEX, 1, WHITE, 3);
+    cv::putText(result_plot, ss.str(), cv::Point(shot_location.x + 20, shot_location.y), cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
     ss.str(std::string());
 
     // add scores
     s1 = "SCORE: ";
     ss << s1 << std::fixed << std::setprecision(2) << score;
-    cv::putText(result_plot, ss.str(), cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1, WHITE, 3);
+    cv::putText(result_plot, ss.str(), cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
 
     // TODO get output path as an argument
     cv::imwrite("../output/output.png", result_plot);
@@ -206,7 +196,7 @@ void ShootingScore::computeShotLocation()
     for (auto &&contour : shot_contours)
     {
         cv::Point contour_centre;
-        getContourCentre(contour, contour_centre);
+        util::getContourCentre(contour, contour_centre);
         shot_location.x = shot_location.x + contour_centre.x;
         shot_location.y = shot_location.y + contour_centre.y;
     }
@@ -225,35 +215,4 @@ void ShootingScore::computeShootingScore()
     double num_distances = (shot_distance / distance);
 
     score = 11 - num_distances;
-}
-
-void getContourCentre(std::vector<cv::Point> &contour, cv::Point &centre)
-{
-    cv::Moments mo = cv::moments(contour);
-    centre = cv::Point(mo.m10 / mo.m00, mo.m01 / mo.m00);
-}
-
-void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar &color = RED)
-{
-    // Iterate over each segment and draw it
-    auto itp = approximation.begin();
-    while (itp != (approximation.end() - 1))
-    {
-        cv::line(img, *itp, *(itp + 1), color, 3);
-        ++itp;
-    }
-    // last point linked to first point
-    cv::line(img, *(approximation.begin()), *(approximation.end() - 1), color, 3);
-}
-
-int imageExists(std::string img_path)
-{
-
-    // check image
-    if (cv::imread(img_path).empty())
-    {
-        std::cout << "Not a valid image file" << std::endl;
-        return -1;
-    }
-    return 0;
 }

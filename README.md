@@ -28,7 +28,7 @@ matches.size() = 500
 ```
 <img src="output/match_img.png" alt="output" width="80%"/>
 
-Obtain good matching points with the ratio test
+Obtain good matches with the ratio test
 ```
 good_matches.size() = 38
 ```
@@ -36,8 +36,7 @@ good_matches.size() = 38
 
 ### Warp Perspective
 
-<img src="output/shot_5.JPG" alt="output" width="53%"/>
-<img src="output/warped_img.png" alt="output" width="40%"/>
+<img src="output/shot_5.JPG" alt="output" width="53%"/><img src="output/warped_img.png" alt="output" width="40%"/>
 
 ## Stage 2: Detecting information from the target board
 

@@ -7,10 +7,13 @@ ImageAlignment::ImageAlignment(std::string input_img_path, std::string reference
         return;
     }
 
+    // read images from path
     input_img = cv::imread(input_img_path);
     reference_img = cv::imread(reference_img_path);
 
-    cv::cvtColor(input_img, input_img_greyscale, cv::COLOR_BGR2GRAY);
+    // prepare the input image for shape detection
+    util::filterImage(input_img, input_img_greyscale, input_img_blur, input_img_thresh);
+    // prepare the reference image for ORB only
     cv::cvtColor(reference_img, reference_img_greyscale, cv::COLOR_BGR2GRAY);
 }
 
@@ -73,6 +76,44 @@ int ImageAlignment::orbFeatureExtractionAlignment()
     cv::imwrite("../output/good_match_img.png", good_match_img);
     // cv::imshow("good matches", good_match_img);
     // cv::imshow("matches", match_img);
+    cv::waitKey(0);
+    cv::destroyAllWindows();
+
+    return 0;
+}
+
+int ImageAlignment::outlineShapeAlignment()
+{
+    std::vector<std::vector<cv::Point>> input_img_contours;
+    // cv::Mat result_plot(input_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+
+    // detect contour from the target model
+    cv::findContours(input_img_thresh, input_img_contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
+
+    // TODO safety check: loop
+    for (size_t idx = 0; idx < input_img_contours.size(); idx++)
+    {
+        std::vector<cv::Point> approx;
+        cv::approxPolyDP(input_img_contours[idx], approx,
+            0.01 * cv::arcLength(input_img_contours[idx], true), true);
+
+        if (cv::contourArea(input_img_contours[idx]) > 1000)
+        {
+            // detect squres
+            if (approx.size() == 4)
+            {
+                util::drawPolyDP(input_img, approx, util::RED);
+                // TODO transform the image by the squre shape
+            }
+            // detect circles
+            // else if (approx.size() >= 10)
+            // {
+            //     cv::drawContours(result_plot, input_img_contours, idx, GREY, 3);
+            // }
+        }
+    }
+
+    cv::imshow("shapes", input_img);
     cv::waitKey(0);
     cv::destroyAllWindows();
 

@@ -1,9 +1,17 @@
 # target-scores
 
+Device & Environment requirements have been specified in `CMakeList.txt`.
+
+Build program
+```
+mkdir build && cd build
+cmake ..
+make
+```
+
 Run program
 
 ```
-cd build
 ./main
 ```
 
@@ -14,29 +22,22 @@ cd build
 
 Input images:
 
-1. Image taken 
-
-    <img src="output/shot_5.JPG" alt="output" width="70%"/>
-
-2. Reference target board imge
-
-    <img src="output/aligned_shot_0.JPG" alt="output" width="40%"/>
+|      Image taken       |     Reference target board     |
+| :--------------------: | :----------------------------: |
+| ![](output/shot_5.JPG) | ![](output/aligned_shot_0.JPG) |
 
 ### Extract matching features
-```
-matches.size() = 500
-```
-<img src="output/match_img.png" alt="output" width="80%"/>
+|          Matches          |          Good Matches          |
+| :-----------------------: | :----------------------------: |
+|  `matches.size() = 500`   |   `good_matches.size() = 38`   |
+| ![](output/match_img.png) | ![](output/good_match_img.png) |
 
-Obtain good matches with the ratio test
-```
-good_matches.size() = 38
-```
-<img src="output/good_match_img.png" alt="output" width="80%"/>
 
 ### Warp Perspective
 
-<img src="output/shot_5.JPG" alt="output" width="53%"/><img src="output/warped_img.png" alt="output" width="40%"/>
+After the warpping, the output is given as below.
+
+<img src="output/warped_img.png" alt="output" width="40%"/>
 
 ## Stage 2: Detecting information from the target board
 

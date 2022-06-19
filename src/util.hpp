@@ -20,7 +20,9 @@ namespace util
     void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar color);
     int imageExists(std::string img_path);
     void getContourCentre(std::vector<cv::Point> &contour, cv::Point &centre);
-    void prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh);
+    void filterImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh);
+    // void prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat
+    // &img_thresh);
 }; // namespace util
 
 #endif

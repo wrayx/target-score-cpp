@@ -26,6 +26,8 @@ private:
     std::vector<std::vector<cv::Point>> model_img_contours;
     std::vector<std::vector<cv::Point>> shot_contours;
 
+    void prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh);
+
 public:
     cv::Point target_centre;
     cv::Point shot_location;

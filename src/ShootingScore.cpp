@@ -16,9 +16,9 @@ ShootingScore::ShootingScore(std::string model_img_path, std::string src_img_pat
     last_img = cv::imread(last_img_path);
 
     // prepare images
-    util::prepareImage(model_img, model_img_greyscale, model_img_blur, model_img_thresh);
-    util::prepareImage(src_img, src_img_greyscale, src_img_blur, src_img_thresh);
-    util::prepareImage(last_img, last_img_greyscale, last_img_blur, last_img_thresh);
+    prepareImage(model_img, model_img_greyscale, model_img_blur, model_img_thresh);
+    prepareImage(src_img, src_img_greyscale, src_img_blur, src_img_thresh);
+    prepareImage(last_img, last_img_greyscale, last_img_blur, last_img_thresh);
 
     cv::Mat tmp(src_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
     result_plot = tmp;
@@ -26,29 +26,26 @@ ShootingScore::ShootingScore(std::string model_img_path, std::string src_img_pat
 
 ShootingScore::~ShootingScore() {}
 
-// void ShootingScore::prepareImage(
-//     cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh)
-// {
+void ShootingScore::prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur,
+    cv::Mat &img_thresh)
+{
 
-//     // transform image into a squre ratio
-//     cv::resize(img, img, cv::Size(img.rows, img.rows));
+    // transform image into a squre ratio
+    cv::resize(img, img, cv::Size(img.rows, img.rows));
 
-//     // Setup a rectangle to define your region of interest
-//     // int adjust = 5;
-//     int width = img.size().width;
-//     int start = std::floor(width / 15);
-//     int end = width - start;
-//     // cv::Rect active_region(start, start, end, end);
+    // Setup a rectangle to define your region of interest
+    // int adjust = 5;
+    int width = img.size().width;
+    int start = std::floor(width / 15);
+    int end = width - start;
+    // cv::Rect active_region(start, start, end, end);
 
-//     // Crop the full image to that image contained by the rectangle active_region
-//     // Note that this doesn't copy the data
-//     img = img(cv::Range(start, end), cv::Range(start, end));
+    // Crop the full image to that image contained by the rectangle active_region
+    // Note that this doesn't copy the data
+    img = img(cv::Range(start, end), cv::Range(start, end));
 
-//     cv::cvtColor(img, img_greyscale, cv::COLOR_BGR2GRAY);
-//     cv::GaussianBlur(img_greyscale, img_blur, cv::Size(15, 15), 0);
-//     cv::adaptiveThreshold(
-//         img_blur, img_thresh, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY_INV, 11, 3);
-// }
+    util::filterImage(img, img_greyscale, img_blur, img_thresh);
+}
 
 void ShootingScore::getShotContours()
 {

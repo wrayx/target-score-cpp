@@ -20,24 +20,48 @@ Run program
 - `ImageAlignment.hpp`
 - `ImageAlignment.cpp`
 
-Input images:
+### Method 1 - Outline Shape Detection
 
-|      Image taken       |     Reference target board     |
-| :--------------------: | :----------------------------: |
-| ![](output/shot_5.JPG) | ![](output/aligned_shot_0.JPG) |
+**Input:** Image taken from the camera
 
-### Extract matching features
-|          Matches          |          Good Matches          |
-| :-----------------------: | :----------------------------: |
-|  `matches.size() = 500`   |   `good_matches.size() = 38`   |
-| ![](output/match_img.png) | ![](output/good_match_img.png) |
+<img src="output/shot_1.JPG" alt="output" width="60%"/>
+
+ 1. Find square contours
+
+    <img src="output/outline.png" alt="output" width="60%"/>
+
+2. Extract board outline (frame)
+
+    <img src="output/outline_selected.png" alt="output" width="60%"/>
 
 
-### Warp Perspective
+---
 
-After the warpping, the output is given as below.
+### Method 2 - Interest Points Matching
 
-<img src="output/warped_img.png" alt="output" width="40%"/>
+**Input:**
+
+- Image taken from the camera
+
+    <img src="output/shot_1.JPG" alt="output" width="60%"/>
+
+- Reference board Image
+
+    <img src="output/aligned_shot_0.JPG" alt="output" width="40%"/>
+
+#### Steps:
+
+1. Matching interest points
+   
+    |          Matches          |          Good Matches          |
+    | :-----------------------: | :----------------------------: |
+    |  `matches.size() = 500`   |   `good_matches.size() = 38`   |
+    | ![](output/match_img.png) | ![](output/good_match_img.png) |
+
+
+2. Warp Perspective. After the warpping, the output is given as below.
+
+    <img src="output/warped_img.png" alt="output" width="40%"/>
 
 ## Stage 2: Detecting information from the target board
 

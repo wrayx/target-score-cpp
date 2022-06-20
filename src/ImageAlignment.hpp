@@ -3,6 +3,16 @@
 
 #include "util.hpp"
 
+#define NEXT_SIBLING   0
+#define PREV_SIBLING   1
+#define CHILD_CONTOUR  2
+#define PARENT_CONTOUR 3
+
+#define OUTPUT_IMG_SIZE 1080
+
+void findContourCorners(std::vector<cv::Point> &contour, int &x_min, int &x_max, int &y_min,
+    int &y_max);
+
 class ImageAlignment
 {
 private:

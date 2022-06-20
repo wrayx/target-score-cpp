@@ -9,7 +9,8 @@ namespace util
         centre = cv::Point(mo.m10 / mo.m00, mo.m01 / mo.m00);
     }
 
-    void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar color = RED)
+    void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar color = RED,
+        int thickness)
     {
         // Iterate over each segment and draw it
         auto itp = approximation.begin();
@@ -19,7 +20,7 @@ namespace util
             ++itp;
         }
         // last point linked to first point
-        cv::line(img, *(approximation.begin()), *(approximation.end() - 1), color, 3);
+        cv::line(img, *(approximation.begin()), *(approximation.end() - 1), color, thickness);
     }
 
     int imageExists(std::string img_path)

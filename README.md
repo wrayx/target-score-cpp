@@ -24,16 +24,23 @@ Run program
 
 **Input:** Image taken from the camera
 
-<img src="output/shot_1.JPG" alt="output" width="60%"/>
+<img src="output/shot_1.JPG" alt="output" width="300px"/>
 
- 1. Find square contours
+ 1. Find polygon contours with 4 corners (quadrilaterals).
 
-    <img src="output/outline.png" alt="output" width="60%"/>
+    <img src="output/outline.png" alt="output" width="300px"/>
 
-2. Extract board outline (frame)
+1. Extract the edge of the target board by their **hierarchies**. 
 
-    <img src="output/outline_selected.png" alt="output" width="60%"/>
+    <img src="output/outline_selected.png" alt="output" width="300px"/>
 
+2. Selected contour seen from the input image
+
+    <img src="output/outline_selected_input_img.png" alt="output" width="300px"/>
+
+3. Find homography and warp perspective of the selected quadrilateral to a 1080x1080 px image, which gives an output as follows:
+
+    <img src="output/warped_img.png" alt="output" width="200px"/>
 
 ---
 
@@ -43,11 +50,11 @@ Run program
 
 - Image taken from the camera
 
-    <img src="output/shot_1.JPG" alt="output" width="60%"/>
+    <img src="output/shot_1.JPG" alt="output" width="300px"/>
 
 - Reference board Image
 
-    <img src="output/aligned_shot_0.JPG" alt="output" width="40%"/>
+    <img src="output/aligned_shot_0.JPG" alt="output" width="200px"/>
 
 #### Steps:
 
@@ -61,7 +68,7 @@ Run program
 
 2. Warp Perspective. After the warpping, the output is given as below.
 
-    <img src="output/warped_img.png" alt="output" width="40%"/>
+    <img src="output/warped_img.png" alt="output" width="200px"/>
 
 ## Stage 2: Detecting information from the target board
 
@@ -70,4 +77,4 @@ Run program
 
 Output: 
 
-<img src="output/input.JPG" alt="output" width="50%"/><img src="output/output.png" alt="output" width="50%"/>
+<img src="output/input.JPG" alt="output" width="200px"/><img src="output/output.png" alt="output" width="200px"/>

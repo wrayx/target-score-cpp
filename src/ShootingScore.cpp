@@ -148,43 +148,43 @@ void ShootingScore::drawShootingResult()
     std::stringstream ss;
 
     // draw target centre
-    cv::circle(result_plot, target_centre, 2, util::LIGHT_GREEN, 3, cv::LINE_AA);
+    cv::circle(result_plot, target_centre, 2, util::WHITE, 3, cv::LINE_AA);
+    // cv::drawMarker(src_img, target_centre, util::RED, cv::MARKER_CROSS, 20, 3);
 
     // add target centre location values
     ss << s0 << s1 << target_centre.x << s2 << target_centre.y << s3;
     cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y),
-        cv::FONT_HERSHEY_SIMPLEX, 1, util::LIGHT_GREEN, 3);
+        cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
     ss.str(std::string());
 
     // draw circle outline
-    circle(result_plot, target_centre, total_radius, util::LIGHT_GREEN, 4, cv::LINE_AA);
+    cv::circle(result_plot, target_centre, total_radius, util::WHITE, 4, cv::LINE_AA);
 
     // draw shot contour
-    // for (size_t idx = 0; idx < shot_contours.size(); idx++)
-    // {
-    //     cv::drawContours(result_plot, shot_contours, idx,  util::RED, 3);
-    // }
+    for (size_t idx = 0; idx < shot_contours.size(); idx++)
+    {
+        cv::drawContours(result_plot, shot_contours, idx, util::GREY, 3);
+    }
 
     // draw shot location (centre point)
     // cv::circle(result_plot, shot_location, 2, WHITE, 3, cv::LINE_AA);
-    cv::drawMarker(result_plot, shot_location, util::WHITE, cv::MARKER_CROSS, 20, 3);
+    cv::drawMarker(result_plot, shot_location, util::LIGHT_GREEN, cv::MARKER_CROSS, 20, 3);
 
     // add shot location values
-    s0 = "LOC ";
+    s0 = "Location: ";
     ss << s0 << s1 << shot_location.x << s2 << shot_location.y << s3;
     cv::putText(result_plot, ss.str(), cv::Point(shot_location.x + 20, shot_location.y),
-        cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
+        cv::FONT_HERSHEY_SIMPLEX, 1, util::LIGHT_GREEN, 3);
     ss.str(std::string());
 
     // add scores
     s1 = "SCORE: ";
     ss << s1 << std::fixed << std::setprecision(2) << score;
-    cv::putText(result_plot, ss.str(), cv::Point(20, 50), cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE,
-        3);
+    cv::putText(result_plot, ss.str(), cv::Point(20, 60), cv::FONT_HERSHEY_SIMPLEX, 1.5,
+        util::LIGHT_GREEN, 3);
 
     // TODO get output path as an argument
-    cv::imwrite("../output/output.png", result_plot);
-
+    // cv::imwrite("../output/output.png", result_plot);
     cv::imshow("shot", result_plot);
     cv::waitKey(0);
     cv::destroyAllWindows();

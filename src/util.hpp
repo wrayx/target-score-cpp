@@ -12,7 +12,7 @@ namespace util
     const cv::Scalar DARK_GREEN = cv::Scalar(28, 168, 23);
     const cv::Scalar RED = cv::Scalar(67, 57, 249);
     const cv::Scalar DARK_RED = cv::Scalar(0, 0, 255);
-    const cv::Scalar GREY = cv::Scalar(80, 80, 80);
+    const cv::Scalar GREY = cv::Scalar(50, 50, 50);
     const cv::Scalar WHITE = cv::Scalar(255, 255, 255);
     const cv::Scalar BLACK = cv::Scalar(0, 0, 0);
     const cv::Scalar BACKGROUND = cv::Scalar(32, 32, 32);

@@ -1,4 +1,4 @@
-# target-scores
+# Target Scoring System
 
 Device & Environment requirements have been specified in `CMakeList.txt`.
 
@@ -15,7 +15,7 @@ Run program
 ./main
 ```
 
-## Stage 1: Align Image taken from the camera
+<!-- ## Stage 1: Align Image taken from the camera
 
 - `ImageAlignment.hpp`
 - `ImageAlignment.cpp`
@@ -77,4 +77,4 @@ Run program
 
 Output: 
 
-<img src="output/input.JPG" alt="output" width="300px"/><img src="output/output.png" alt="output" width="300px"/>
+<img src="output/output.png" alt="output" width="300px"/> -->

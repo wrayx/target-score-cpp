@@ -15,6 +15,8 @@ Run program
 ./main
 ```
 
+Project walkthrough can be found here: Target Scoring System on wrayx.uk
+
 <!-- ## Stage 1: Align Image taken from the camera
 
 - `ImageAlignment.hpp`

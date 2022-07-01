@@ -23,9 +23,10 @@ private:
     cv::Mat reference_img;
     cv::Mat reference_img_greyscale;
 
-    const float MATCH_RATIO = 0.88f;
+    const float MATCH_RATIO = 0.85f;
 
 public:
+    cv::Mat output_img_orb_aligned, output_img_shape_aligned;
     ImageAlignment(std::string input_img_path, std::string reference_img_path);
     ~ImageAlignment();
     int orbFeatureExtractionAlignment();

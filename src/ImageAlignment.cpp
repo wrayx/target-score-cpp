@@ -55,10 +55,14 @@ int ImageAlignment::orbFeatureExtractionAlignment()
         homography =
             cv::findHomography(input_img_matched_keypoints, ref_img_matched_keypoints, cv::RANSAC);
     }
+    else
+    {
+        return -1;
+    }
 
     cv::Mat warped_img;
     cv::warpPerspective(input_img, warped_img, homography, reference_img.size());
-    cv::imwrite("../output/warped_img.png", warped_img);
+    // cv::imwrite("../output/warped_img.png", warped_img);
     cv::imshow("wraped perspective", warped_img);
 
     // draw matches
@@ -72,8 +76,8 @@ int ImageAlignment::orbFeatureExtractionAlignment()
     std::cout << "matches.size()=" << matches.size() << std::endl;
     std::cout << "good_matches.size()=" << good_matches.size() << std::endl;
 
-    cv::imwrite("../output/match_img.png", match_img);
-    cv::imwrite("../output/good_match_img.png", good_match_img);
+    // cv::imwrite("../output/match_img.png", match_img);
+    // cv::imwrite("../output/good_match_img.png", good_match_img);
     // cv::imshow("good matches", good_match_img);
     // cv::imshow("matches", match_img);
     cv::waitKey(0);
@@ -85,87 +89,55 @@ int ImageAlignment::orbFeatureExtractionAlignment()
 int ImageAlignment::outlineShapeAlignment()
 {
     std::vector<std::vector<cv::Point>> input_img_contours, square_contours;
-    cv::Mat result_plot(input_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    cv::Mat quadrilaterals_plot(input_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
     std::vector<cv::Vec4i> hierarchy;
 
-    // detect contour from the target model
+    // detect contours from the input image
     cv::findContours(input_img_thresh, input_img_contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 
-    // for (size_t i = 0; i < hierarchy.size(); i++)
-    // {
-
-    //     std::cout << "(" << hierarchy[i].rows;
-    //     std::cout << ", " << hierarchy[i].cols << ")" << std::endl;
-    // }
-
-    std::cout << hierarchy.size() << std::endl;
-    std::cout << input_img_contours.size() << std::endl;
-
-    // TODO safety check: loop
+    // loop through contours, find quadrilaterals
     for (size_t idx = 0; idx < input_img_contours.size(); idx++)
     {
         std::vector<cv::Point> approx;
         cv::approxPolyDP(input_img_contours[idx], approx,
-            0.01 * cv::arcLength(input_img_contours[idx], true), true);
+            0.05 * cv::arcLength(input_img_contours[idx], true), true);
 
         if (cv::contourArea(input_img_contours[idx]) > 1000)
         {
-            // detect squres
+            // detect quadrilaterals, contour with 4 corners
             if (approx.size() == 4)
             {
-                util::drawPolyDP(result_plot, approx, util::WHITE);
+                util::drawPolyDP(quadrilaterals_plot, approx, util::WHITE);
             }
         }
     }
 
-    cv::Rect board_frame;
     cv::Mat tmp;
     std::vector<cv::Point> board_corners, output_corners;
-    cv::cvtColor(result_plot, tmp, cv::COLOR_BGR2GRAY);
+    cv::cvtColor(quadrilaterals_plot, tmp, cv::COLOR_BGR2GRAY);
     cv::findContours(tmp, square_contours, hierarchy, cv::RETR_TREE, cv::CHAIN_APPROX_SIMPLE);
-
-    int x_min, x_max, y_min, y_max;
-
-    std::cout << "square_contours.size()=" << square_contours.size() << std::endl;
 
     for (size_t idx = 0; idx < square_contours.size(); idx++)
     {
+        // contour with 2 parents
+        // (no parent) = -1, (1 parent) = 0 ...
         if (hierarchy[idx][PARENT_CONTOUR] == 1)
         {
-            // This contour has no children, draw it red for demonstration purposes
-            // cv::drawContours(result_plot, square_contours, idx, util::RED, 5);
-
-            std::cout << "square_contours[idx].size()=" << square_contours[idx].size() << std::endl;
-
-            findContourCorners(square_contours[idx], x_min, x_max, y_min, y_max);
-
-            std::cout << "x_min=" << x_min << " x_max=" << x_max << " y_min=" << y_min
-                      << " y_max=" << y_max << std::endl;
-
-            std::vector<cv::Point> approx;
+            // approximate the contour as a quadrilateral
             cv::approxPolyDP(square_contours[idx], board_corners,
                 0.1 * cv::arcLength(square_contours[idx], true), true);
 
-            util::drawPolyDP(result_plot, board_corners, util::RED, 10);
+            // draw the detected edge of the target board
+            util::drawPolyDP(quadrilaterals_plot, board_corners, util::RED, 10);
 
-            // // top left corner
-            // board_corners.push_back(cv::Point(x_min, y_min));
-            // // top right corner
-            // board_corners.push_back(cv::Point(x_max, y_min));
-            // // bottom left corner
-            // board_corners.push_back(cv::Point(x_min, y_max));
-            // // bottom right corner
-            // board_corners.push_back(cv::Point(x_max, y_max));
-
+            // define the output image shape
             output_corners.push_back(cv::Point(0, 0));
             output_corners.push_back(cv::Point(0, OUTPUT_IMG_SIZE));
             output_corners.push_back(cv::Point(OUTPUT_IMG_SIZE, OUTPUT_IMG_SIZE));
             output_corners.push_back(cv::Point(OUTPUT_IMG_SIZE, 0));
 
-            //(no parent) = -1, (1 parent) = 0 ...
-            std::cout << "Contour with 2 parents: #" << idx << " r="
-                      << board_frame
-                      //   << " h=" << hierarchy[idx] << "\n"
+            // (no parent) = -1, (1 parent) = 0 ...
+            std::cout << "Contour with 2 parents: #" << idx << "\n"
                       << " src corners: "
                       << "\n"
                       << board_corners << "\n"
@@ -175,72 +147,21 @@ int ImageAlignment::outlineShapeAlignment()
             continue;
         }
 
-        // This contour has children, draw it blue for demonstration purposes
-        cv::drawContours(result_plot, square_contours, idx, util::WHITE, 1);
+        // draw the remaining quadrilateral contours
+        // cv::drawContours(quadrilaterals_plot, square_contours, idx, util::WHITE, 1);
     }
 
+    // findHomography from the input image
     cv::Mat homography;
     homography = cv::findHomography(board_corners, output_corners, cv::RANSAC);
-    cv::Mat warped_img;
-    cv::warpPerspective(input_img, warped_img, homography,
+    // warp perspective onto the output image shape
+    cv::warpPerspective(input_img, output_img_shape_aligned, homography,
         cv::Size(OUTPUT_IMG_SIZE, OUTPUT_IMG_SIZE));
 
-    // Setup a rectangle to define your region of interest
-    // int adjust = 5;
-    // int width = img.size().width;
-    // int start = std::floor(width / 15);
-    // int end = width - start;
-    // cv::Rect output_shape(0, 0, OUTPUT_IMG_SIZE, OUTPUT_IMG_SIZE);
-    // std::vector<cv::Point> v(cv::Point(0, 0), cv::Point(0, 0), cv::Point(0, 0), cv::Point(0, 0));
-
-    // std::vector<cv::Point> *v = new std::vector<cv::Point>();
-
-    // v->push_back(cv::Point(0, 0));
-    // v->push_back(cv::Point(0, 0));
-    // v->push_back(cv::Point(0, 0));
-    // v->push_back(cv::Point(0, 0));
-
-    // delete &v;
-
-    // Crop the full image to that image contained by the rectangle active_region
-    // Note that this doesn't copy the data
-    // img = img(cv::Range(start, end), cv::Range(start, end));
-
-    cv::imshow("shapes", warped_img);
-    cv::imwrite("../output/warped_img.png", warped_img);
+    cv::imshow("shapes", quadrilaterals_plot);
+    // cv::imwrite("../output/output_img_shape_aligned.png", output_img_shape_aligned);
     cv::waitKey(0);
     cv::destroyAllWindows();
 
     return 0;
-}
-
-void findContourCorners(std::vector<cv::Point> &contour, int &x_min, int &x_max, int &y_min,
-    int &y_max)
-{
-    // initialise values
-    x_max = -1;
-    y_max = -1;
-    x_min = 2000;
-    y_min = 2000;
-
-    for (auto &&point : contour)
-    {
-        if (point.x > x_max)
-        {
-            x_max = point.x;
-        }
-        else if (point.x < x_min)
-        {
-            x_min = point.x;
-        }
-
-        if (point.y > y_max)
-        {
-            y_max = point.y;
-        }
-        else if (point.y < y_min)
-        {
-            y_min = point.y;
-        }
-    }
 }

@@ -55,6 +55,10 @@ void ShootingScore::getShotContours()
     // calculate differences
     cv::absdiff(src_img_blur, last_img_blur, img_diff);
 
+    // cv::imwrite("../output/src_img_blur.png", src_img_blur);
+    // cv::imwrite("../output/last_img_blur.png", last_img_blur);
+    // cv::imwrite("../output/img_diff.png", img_diff);
+
     // obtain the threshold differences
     cv::threshold(img_diff, img_diff, 150, 255, cv::THRESH_BINARY);
 
@@ -70,32 +74,12 @@ void ShootingScore::detectTargetBoard()
     // TODO safety check: loop
     for (size_t idx = 0; idx < model_img_contours.size(); idx++)
     {
+        // polygon approximations
         std::vector<cv::Point> approx;
         cv::approxPolyDP(model_img_contours[idx], approx,
             0.01 * cv::arcLength(model_img_contours[idx], true), true);
 
-        // if (cv::contourArea(model_img_contours[idx]) > 500)
-        // {
-        //     // detect squres
-        //     if (approx.size() == 4)
-        //     {
-        //         drawPolyDP(result_plot, approx, LIGHTGREEN);
-        //         // TODO transform the image by the squre shape
-        //     }
-        //     // detect circles
-        //     else if (approx.size() >= 10)
-        //     {
-        //         cv::drawContours(result_plot, model_img_contours, idx, GREY, 3);
-        //     }
-        // }
-
-        // detect squres
-        // if (approx.size() == 4)
-        // {
-        //     drawPolyDP(result_plot, approx, LIGHTGREEN);
-        //     // TODO transform the image by the squre shape
-        // }
-        // detect other shapes (numbers, circles)
+        // detect other irregular shapes (numbers, circles)
         if (approx.size() >= 10 and cv::contourArea(model_img_contours[idx]) > 10)
         {
             cv::drawContours(result_plot, model_img_contours, idx, util::GREY, 3);
@@ -149,12 +133,17 @@ void ShootingScore::drawShootingResult()
 
     // draw target centre
     cv::circle(result_plot, target_centre, 2, util::WHITE, 3, cv::LINE_AA);
-    // cv::drawMarker(src_img, target_centre, util::RED, cv::MARKER_CROSS, 20, 3);
+    // cv::drawMarker(src_img, target_centre, util::DARK_RED, cv::MARKER_CROSS, 20, 3);
+    // cv::circle(src_img, target_centre, total_radius, util::DARK_RED, 4, cv::LINE_AA);
 
     // add target centre location values
     ss << s0 << s1 << target_centre.x << s2 << target_centre.y << s3;
     cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y),
         cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
+
+    // cv::putText(src_img, ss.str(), cv::Point(target_centre.x + 20, target_centre.y),
+    //     cv::FONT_HERSHEY_SIMPLEX, 1, util::DARK_RED, 3);
+
     ss.str(std::string());
 
     // draw circle outline
@@ -164,7 +153,9 @@ void ShootingScore::drawShootingResult()
     for (size_t idx = 0; idx < shot_contours.size(); idx++)
     {
         cv::drawContours(result_plot, shot_contours, idx, util::GREY, 3);
+        cv::drawContours(src_img, shot_contours, idx, util::DARK_RED, 3);
     }
+    cv::drawMarker(src_img, shot_location, util::WHITE, cv::MARKER_CROSS, 20, 3);
 
     // draw shot location (centre point)
     // cv::circle(result_plot, shot_location, 2, WHITE, 3, cv::LINE_AA);
@@ -175,6 +166,8 @@ void ShootingScore::drawShootingResult()
     ss << s0 << s1 << shot_location.x << s2 << shot_location.y << s3;
     cv::putText(result_plot, ss.str(), cv::Point(shot_location.x + 20, shot_location.y),
         cv::FONT_HERSHEY_SIMPLEX, 1, util::LIGHT_GREEN, 3);
+    cv::putText(src_img, ss.str(), cv::Point(shot_location.x + 20, shot_location.y),
+        cv::FONT_HERSHEY_SIMPLEX, 1, util::DARK_RED, 3);
     ss.str(std::string());
 
     // add scores
@@ -184,8 +177,9 @@ void ShootingScore::drawShootingResult()
         util::LIGHT_GREEN, 3);
 
     // TODO get output path as an argument
-    // cv::imwrite("../output/output.png", result_plot);
+    // cv::imwrite("../output/shot_location.png", src_img);
     cv::imshow("shot", result_plot);
+    // cv::imshow("shot", src_img);
     cv::waitKey(0);
     cv::destroyAllWindows();
 }

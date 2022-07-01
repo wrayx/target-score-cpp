@@ -5,21 +5,22 @@ int main(int argc, char const *argv[])
 {
     /* code */
 
-    ImageAlignment *ia = new ImageAlignment("../input_images/group_1/shot_5.JPG",
-        "../input_images/group_1/aligned/aligned_shot_0.JPG");
+    // ImageAlignment *ia = new ImageAlignment("../input_images/group_1/shot_1.JPG",
+    //     "../input_images/group_1/aligned/aligned_shot_1.JPG");
 
-    ia->orbFeatureExtractionAlignment();
+    // ia->orbFeatureExtractionAlignment();
+    // ia->outlineShapeAlignment();
 
     // TODO get input images path as command argument
-    // ShootingScore *ss = new ShootingScore("../input_images/group_1/aligned/aligned_shot_0.JPG",
-    //     "../input_images/group_1/aligned/aligned_shot_1.JPG",
-    //     "../input_images/group_1/aligned/aligned_shot_0.JPG");
-    // ss->computeTargetCentre();
-    // ss->detectTargetBoard();
-    // ss->getShotContours();
-    // ss->computeShotLocation();
-    // ss->computeShootingScore();
-    // ss->drawShootingResult();
+    ShootingScore *ss = new ShootingScore("../input_images/group_1/aligned/aligned_shot_0.JPG",
+        "../input_images/group_1/aligned/aligned_shot_1.JPG",
+        "../input_images/group_1/aligned/aligned_shot_0.JPG");
+    ss->computeTargetCentre();
+    ss->detectTargetBoard();
+    ss->getShotContours();
+    ss->computeShotLocation();
+    ss->computeShootingScore();
+    ss->drawShootingResult();
 
     return 0;
 }

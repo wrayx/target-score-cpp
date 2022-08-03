@@ -15,6 +15,8 @@ Run program
 ./main
 ```
 
+More specific information about the environment set up can be found here: [wrayx.uk](https://wrayx.uk/posts/configure-vscode-env-for-cpp-on-macos/)
+
 ## Stage 1: Align Image taken from the camera
 
 - `ImageAlignment.hpp`

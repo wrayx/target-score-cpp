@@ -21,18 +21,21 @@ set(SOURCE_DIR src)
 # configure the necessary common CMake environment variables
 # needed to include and link the OpenCV program into this
 # demo project, namely OpenCV_INCLUDE_DIRS and OpenCV_LIBS
-find_package( OpenCV REQUIRED )
+find_package(OpenCV REQUIRED)
 
 # tell the build to include the headers from OpenCV
-include_directories( ${OpenCV_INCLUDE_DIRS} ${SOURCE_DIR})
-
-# specify the executable target to be built
-add_executable(main main.cpp)
-
-# tell it to link the executable target against OpenCV
-target_link_libraries(main ${OpenCV_LIBS} util ShootingScore ImageAlignment)
+include_directories(${OpenCV_INCLUDE_DIRS} ${SOURCE_DIR})
 
 # add library that compute shooting score
 add_library(ShootingScore ${SOURCE_DIR}/ShootingScore.cpp)
 add_library(ImageAlignment ${SOURCE_DIR}/ImageAlignment.cpp)
 add_library(util ${SOURCE_DIR}/util.cpp)
+
+# specify the executable target to be built
+add_executable(main main.cpp)
+
+target_link_libraries(ShootingScore util)
+target_link_libraries(ImageAlignment util)
+
+# tell it to link the executable target against OpenCV
+target_link_libraries(main ${OpenCV_LIBS} util ShootingScore ImageAlignment)

@@ -77,6 +77,37 @@ More specific information about the environment set up can be found here: [wrayx
 - `ShootingScore.hpp`
 - `ShootingScore.cpp`
 
+After the orginal image has been warpped the processed. Now we can extract and calculate the shots and scoring information from it. 
+The score is approximated from the differences in the image from the next one: 
+
+|         Before the shot       |          After the shot        |
+| :---------------------------: | :----------------------------: |
+| ![](output/last_img_blur.png) | ![](output/src_img_blur.png)   |
+    
+The differences from the above two images are as follows:
+
+<img src="output/img_diff.png" alt="output" width="500px"/>
+
+From there we calculate the scores and other infos: 
+
+<img src="output/shot_contour.png" alt="output" width="500px"/>
+<img src="output/shot_location.png" alt="output" width="500px"/>
+
+including the target centre by detecting the outermost circle from the image:
+
+<img src="output/target_circle.png" alt="output" width="500px"/>
+
 Output: 
 
-<img src="output/output.png" alt="output" width="300px"/>
+<img src="output/output.png" alt="output" width="500px"/>\
+
+## Additionally
+
+The project itself and the complete set of documentation is still in development. The draft of the doc can be viewed from here: [wrayx.uk - The Development of the Target Scoring System](https://wrayx.uk/posts/target-scoring-system/)
+
+### TODO
+
+- [ ] Sound detection.
+- [ ] Image capturing with raspi cam module.
+- [ ] Shot sample image collection and learning.
+- [ ] The detection system is sensitive to lighting conditions, so how to automatic tuning the image processing parameters relative to the image contrast and brightnesses.

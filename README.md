@@ -24,7 +24,7 @@ The current set up is as follows:
 1. An iPhone camera to take photo of the target board
 2. The target board is placed inside a black box to maintain a clean background and consistent lighting condition
 
-<p style="text-align:center;">
+<p align="center">
 <img src="output/project_set_up.jpg" alt="output" width="500px"/>
 <img src="output/camera_set_up.jpg" alt="output" width="500px"/>
 </p>

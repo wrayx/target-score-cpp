@@ -10,12 +10,11 @@
 
 #define OUTPUT_IMG_SIZE 1080
 
-void findContourCorners(std::vector<cv::Point> &contour, int &x_min, int &x_max, int &y_min,
-    int &y_max);
+void findContourCorners(std::vector<cv::Point> &contour, int &x_min, int &x_max,
+                        int &y_min, int &y_max);
 
-class ImageAlignment
-{
-private:
+class ImageAlignment {
+  private:
     cv::Mat input_img;
     cv::Mat input_img_greyscale;
     cv::Mat input_img_blur;
@@ -23,9 +22,9 @@ private:
     cv::Mat reference_img;
     cv::Mat reference_img_greyscale;
 
-    const float MATCH_RATIO = 0.85f;
+    const float MATCH_RATIO = 0.8f;
 
-public:
+  public:
     cv::Mat output_img_orb_aligned, output_img_shape_aligned;
     ImageAlignment(std::string input_img_path, std::string reference_img_path);
     ~ImageAlignment();

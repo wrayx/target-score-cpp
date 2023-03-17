@@ -10,9 +10,6 @@
 
 #define OUTPUT_IMG_SIZE 1080
 
-void findContourCorners(std::vector<cv::Point> &contour, int &x_min, int &x_max,
-                        int &y_min, int &y_max);
-
 class ImageAlignment {
   private:
     cv::Mat input_img;

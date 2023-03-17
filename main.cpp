@@ -1,5 +1,5 @@
 #include "ImageAlignment.hpp"
-#include "ShootingScore.hpp"
+#include "ShotTracking.hpp"
 
 int main(int argc, char const *argv[]) {
     // ImageAlignment *align_image = new ImageAlignment(
@@ -10,11 +10,11 @@ int main(int argc, char const *argv[]) {
     // align_image->outlineShapeAlignment();
 
     // TODO get input images path as command argument
-    ShootingScore *ss = new ShootingScore();
-    ss->getResultPlot("../input_images/group_1/aligned/aligned_shot_0.JPG",
-                      "../input_images/group_1/aligned/aligned_shot_2.JPG",
-                      "../input_images/group_1/aligned/aligned_shot_1.JPG");
-    std::cout << "score = " << ss->score << std::endl;
-    delete ss;
+    ShotTracking *st = new ShotTracking();
+    st->getResultPlot("../input_images/group_1/aligned/aligned_shot_0.JPG",
+                      "../input_images/group_1/aligned/aligned_shot_3.JPG",
+                      "../input_images/group_1/aligned/aligned_shot_2.JPG");
+    std::cout << "score = " << st->score << std::endl;
+    delete st;
     return 0;
 }

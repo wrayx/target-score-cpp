@@ -12,22 +12,15 @@
 
 class ImageAlignment {
   private:
-    cv::Mat input_img;
-    cv::Mat input_img_greyscale;
-    cv::Mat input_img_blur;
-    cv::Mat input_img_thresh;
-    cv::Mat reference_img;
-    cv::Mat reference_img_greyscale;
-    cv::Mat reference_img_blur;
-    cv::Mat reference_img_thresh;
+    cv::Mat input_img_greyscale, input_img_blur, input_img_binary;
 
-    const float MATCH_RATIO = 0.7f;
+    const float MATCH_RATIO = 0.15f;
 
   public:
-    cv::Mat output_img_orb_aligned, output_img_shape_aligned;
-    ImageAlignment(std::string input_img_path, std::string reference_img_path);
+    cv::Mat input_img, aligned_img;
+    ImageAlignment(std::string input_img_path);
     ~ImageAlignment();
-    int orbFeatureExtractionAlignment();
+    int orbFeatureExtractionAlignment(std::string reference_img_path);
     int outlineShapeAlignment();
 };
 

@@ -1,8 +1,12 @@
 #include "ShootingScore.hpp"
 
-ShootingScore::ShootingScore(std::string model_img_path,
-                             std::string src_img_path,
-                             std::string last_img_path) {
+ShootingScore::ShootingScore() {}
+
+ShootingScore::~ShootingScore() {}
+
+void ShootingScore::getResultPlot(std::string model_img_path,
+                                  std::string src_img_path,
+                                  std::string last_img_path) {
     // check path
     if (!util::imageExists(model_img_path))
         throw std::invalid_argument("invalid model image path");
@@ -12,20 +16,79 @@ ShootingScore::ShootingScore(std::string model_img_path,
         throw std::invalid_argument("invalid (last) input image path");
 
     // three input images are required
-    this->model_img = cv::imread(model_img_path);
-    this->src_img = cv::imread(src_img_path);
-    this->last_img = cv::imread(last_img_path);
+    cv::Mat model_img = cv::imread(model_img_path);
+    cv::Mat src_img = cv::imread(src_img_path);
+    cv::Mat last_img = cv::imread(last_img_path);
 
-    // prepare images in the format of greyscale, blurred, binary
-    prepareImage(this->model_img, model_img_greyscale, model_img_blur, model_img_thresh);
-    prepareImage(this->src_img, src_img_greyscale, src_img_blur, src_img_thresh);
-    prepareImage(this->last_img, last_img_greyscale, last_img_blur, last_img_thresh);
+    cv::Mat src_img_greyscale, src_img_blur, src_img_binary;
+    cv::Mat last_img_greyscale, last_img_blur, last_img_binary;
+    cv::Mat model_img_greyscale, model_img_blur, model_img_binary;
 
-    this->result_plot = cv::Mat(src_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
-    this->target_centre = cv::Point(0, 0);
+    // prepare images in the format of greyscale, blurred and binary
+    prepareImage(model_img, model_img_greyscale, model_img_blur, model_img_binary);
+    prepareImage(src_img, src_img_greyscale, src_img_blur, src_img_binary);
+    prepareImage(last_img, last_img_greyscale, last_img_blur, last_img_binary);
+
+    // initialise the result plot
+    cv::Mat result_plot = cv::Mat(src_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+
+    // draw target contour
+    drawTargetContours(model_img_binary, result_plot);
+    // get target board centre and radius
+    float radius;
+    cv::Point target_centre = cv::Point(0, 0);
+    computeTargetCentreRadi(model_img_greyscale, target_centre, radius);
+    // get shot contours
+    std::vector<std::vector<cv::Point>> shot_contours;
+    getShotContours(src_img_blur, last_img_blur, shot_contours);
+    // get shot location
+    cv::Point shot_location = cv::Point(0, 0);
+    getShotLocation(shot_contours, shot_location);
+    this->score = computeScore(target_centre, shot_location, radius);
+
+    // stringstream for string concatnations
+    std::stringstream ss;
+
+    // draw target centre
+    cv::circle(result_plot, target_centre, 2, util::WHITE, 3, cv::LINE_AA);
+
+    // add target centre location values
+    ss << "CENTRE (" << target_centre.x << ", " << target_centre.y << ")";
+    cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y),
+                cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
+
+    // draw outermost circle on result_plot
+    cv::circle(result_plot, target_centre, radius, util::WHITE, 4, cv::LINE_AA);
+
+    // if the there is a valid score, draw it out on result plot
+    if (score != 0) {
+        // draw shot contour
+        for (size_t idx = 0; idx < shot_contours.size(); idx++) {
+            cv::drawContours(result_plot, shot_contours, idx, util::GREY, 3);
+        }
+
+        // draw shot location
+        cv::drawMarker(result_plot, shot_location, util::LIGHT_GREEN, cv::MARKER_CROSS,
+                       20, 3);
+
+        // add shot location values
+        ss.str(std::string());   // clear stringstream
+        ss << "Location: (" << shot_location.x << ", " << shot_location.y << ")";
+        cv::putText(result_plot, ss.str(),
+                    cv::Point(shot_location.x + 20, shot_location.y),
+                    cv::FONT_HERSHEY_SIMPLEX, 1, util::LIGHT_GREEN, 3);
+    }
+
+    // add scores
+    ss.str(std::string());   // clear stringstream
+    ss << "SCORE: " << std::fixed << std::setprecision(2) << score;
+    cv::putText(result_plot, ss.str(), cv::Point(20, 60), cv::FONT_HERSHEY_SIMPLEX, 1.5,
+                util::LIGHT_GREEN, 3);
+
+    cv::imshow("shot", result_plot);
+    cv::waitKey(0);
+    cv::destroyAllWindows();
 }
-
-ShootingScore::~ShootingScore() {}
 
 void ShootingScore::prepareImage(cv::Mat &img,
                                  cv::Mat &img_greyscale,
@@ -46,7 +109,9 @@ void ShootingScore::prepareImage(cv::Mat &img,
     util::filterImage(img, img_greyscale, img_blur, img_binary);
 }
 
-void ShootingScore::getShotContours() {
+void ShootingScore::getShotContours(cv::Mat &src_img_blur,
+                                    cv::Mat &last_img_blur,
+                                    std::vector<std::vector<cv::Point>> &shot_contours) {
 
     cv::Mat img_diff;
 
@@ -60,13 +125,13 @@ void ShootingScore::getShotContours() {
     cv::findContours(img_diff, shot_contours, cv::RETR_LIST, cv::CHAIN_APPROX_SIMPLE);
 }
 
-void ShootingScore::drawTargetContours() {
+void ShootingScore::drawTargetContours(cv::Mat &model_img_binary, cv::Mat &result_plot) {
     std::vector<std::vector<cv::Point>> model_img_contours;
     // detect contour from the target model
-    cv::findContours(model_img_thresh, model_img_contours, cv::RETR_LIST,
+    cv::findContours(model_img_binary, model_img_contours, cv::RETR_LIST,
                      cv::CHAIN_APPROX_SIMPLE);
 
-    // TODO safety check: loop
+    // loop through contours detected from the binary image
     for (size_t idx = 0; idx < model_img_contours.size(); idx++) {
         // polygon approximations
         std::vector<cv::Point> approx;
@@ -80,7 +145,9 @@ void ShootingScore::drawTargetContours() {
     }
 }
 
-cv::Point ShootingScore::computeTargetCentre() {
+void ShootingScore::computeTargetCentreRadi(cv::Mat &model_img_greyscale,
+                                            cv::Point &target_centre,
+                                            float &radius) {
     // detecting circle
     std::vector<cv::Vec3f> circles;
 
@@ -104,85 +171,20 @@ cv::Point ShootingScore::computeTargetCentre() {
         for (size_t i = 0; i < circles.size(); i++) {
             // [x, y, radii] 3 items in circles[i]
             cv::Vec3i c = circles[i];
-            // target_centre = cv::Point(c[0], c[1]);
             // calculate an avearge of target centre on fly
             target_centre.x = target_centre.x + (c[0] - target_centre.x) / n;
             target_centre.y = target_centre.y + (c[1] - target_centre.y) / n;
-            total_radius = c[2];
+            radius = c[2];
             ++n;
-            // std::cout << target_centre << std::endl;
-            // draw newly detected circle
-            cv::circle(model_img, target_centre, total_radius, util::DARK_GREEN, 3,
-                       cv::LINE_AA);
         }
         max_radii += 50;
     }
-    return target_centre;
-}
-
-void ShootingScore::getResultPlot() {
-    // TODO safety check: loop
-    drawTargetContours();
-
-    // stringstream for constract strings
-    std::stringstream ss;
-
-    // draw target centre
-    cv::circle(result_plot, target_centre, 2, util::WHITE, 3, cv::LINE_AA);
-    cv::drawMarker(model_img, target_centre, util::DARK_RED, cv::MARKER_CROSS, 20, 3);
-    cv::circle(model_img, target_centre, total_radius, util::DARK_RED, 4, cv::LINE_AA);
-
-    // add target centre location values
-    ss << "CENTRE (" << target_centre.x << ", " << target_centre.y << ")";
-    cv::putText(result_plot, ss.str(), cv::Point(target_centre.x + 20, target_centre.y),
-                cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
-    cv::putText(model_img, ss.str(), cv::Point(target_centre.x + 20, target_centre.y),
-                cv::FONT_HERSHEY_SIMPLEX, 1, util::DARK_RED, 3);
-
-    // draw outermost circle on result_plot
-    cv::circle(result_plot, target_centre, total_radius, util::WHITE, 4, cv::LINE_AA);
-
-    if (this->score != 0) {
-        // draw shot contour
-        for (size_t idx = 0; idx < shot_contours.size(); idx++) {
-            cv::drawContours(result_plot, shot_contours, idx, util::GREY, 3);
-            cv::drawContours(src_img, shot_contours, idx, util::DARK_RED, 3);
-        }
-        cv::drawMarker(model_img, shot_location, util::WHITE, cv::MARKER_CROSS, 20, 3);
-
-        // draw shot location (centre point)
-        // cv::circle(result_plot, shot_location, 2, WHITE, 3, cv::LINE_AA);
-        cv::drawMarker(result_plot, shot_location, util::LIGHT_GREEN, cv::MARKER_CROSS,
-                       20, 3);
-
-        // add shot location values
-        ss.str(std::string());   // clear stringstream
-        ss << "Location: (" << shot_location.x << ", " << shot_location.y << ")";
-        cv::putText(result_plot, ss.str(),
-                    cv::Point(shot_location.x + 20, shot_location.y),
-                    cv::FONT_HERSHEY_SIMPLEX, 1, util::LIGHT_GREEN, 3);
-        cv::putText(model_img, ss.str(), cv::Point(shot_location.x + 20, shot_location.y),
-                    cv::FONT_HERSHEY_SIMPLEX, 1, util::DARK_RED, 3);
-    }
-
-    // add scores
-    ss.str(std::string());   // clear stringstream
-    ss << "SCORE: " << std::fixed << std::setprecision(2) << score;
-    cv::putText(result_plot, ss.str(), cv::Point(20, 60), cv::FONT_HERSHEY_SIMPLEX, 1.5,
-                util::LIGHT_GREEN, 3);
-
-    cv::imshow("shot", result_plot);
-    cv::waitKey(0);
-    cv::destroyAllWindows();
 }
 
 /* uses shot contours to cumpute the shot location */
-void ShootingScore::getShotLocation() {
-    this->shot_location = cv::Point(0, 0);
-
-    // as the shot contour can be irregular,
-    // we need consider all shapes,
-    // and compute the actual centre of all contours
+void ShootingScore::getShotLocation(std::vector<std::vector<cv::Point>> &shot_contours,
+                                    cv::Point &shot_location) {
+    // compute the shot centre as the centre of an irrigular shape
     for (auto &&contour : shot_contours) {
         cv::Point contour_centre;
         util::getContourCentre(contour, contour_centre);
@@ -195,18 +197,20 @@ void ShootingScore::getShotLocation() {
     shot_location.y = shot_location.y / shot_contours.size();
 }
 
-int ShootingScore::computeShootingScore() {
+float ShootingScore::computeScore(cv::Point target_centre,
+                                  cv::Point shot_location,
+                                  float radius) {
     // euclidean distance between the centre and the shot
-    shot_distance = cv::norm(target_centre - shot_location);
+    double shot_distance = cv::norm(target_centre - shot_location);
 
     // distance between each ring
-    float ring_distance = total_radius / 10;
+    float ring_distance = radius / 10;
 
     // highest mark - number of rings away from the centre
-    this->score = 11 - (shot_distance / ring_distance);
+    float score = 11 - (shot_distance / ring_distance);
 
     // discard negative score
-    this->score = this->score < 0 ? 0 : this->score;
+    score = score < 0 ? 0 : score;
 
-    return this->score;
+    return score;
 }

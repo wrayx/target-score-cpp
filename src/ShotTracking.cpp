@@ -1,52 +1,54 @@
 #include "ShotTracking.hpp"
 
-ShotTracking::ShotTracking() {}
+ShotTracking::ShotTracking(std::string template_img_path) {
+    if (!util::imageExists(template_img_path))
+        throw std::invalid_argument("invalid model image path");
+    template_img = cv::imread(template_img_path);
+    prepareImage(template_img, template_img_greyscale, template_img_blur,
+                 template_img_binary);
+}
 
 ShotTracking::~ShotTracking() {}
 
-void ShotTracking::getResultPlot(std::string model_img_path,
-                                 std::string src_img_path,
-                                 std::string last_img_path,
+void ShotTracking::getResultPlot(std::string input_img_path,
+                                 std::string previous_img_path,
                                  std::string output_path) {
     // check path
-    if (!util::imageExists(model_img_path))
-        throw std::invalid_argument("invalid model image path");
-    if (!util::imageExists(src_img_path))
+    if (!util::imageExists(input_img_path))
         throw std::invalid_argument("invalid input image path");
-    if (!util::imageExists(last_img_path))
+    if (!util::imageExists(previous_img_path))
         throw std::invalid_argument("invalid (last) input image path");
 
-    // three input images are required
-    cv::Mat model_img = cv::imread(model_img_path);
-    cv::Mat src_img = cv::imread(src_img_path);
-    cv::Mat last_img = cv::imread(last_img_path);
+    // read input images
+    cv::Mat input_img = cv::imread(input_img_path);
+    cv::Mat previous_img = cv::imread(previous_img_path);
 
-    cv::Mat src_img_greyscale, src_img_blur, src_img_binary;
-    cv::Mat last_img_greyscale, last_img_blur, last_img_binary;
-    cv::Mat model_img_greyscale, model_img_blur, model_img_binary;
+    cv::Mat input_img_greyscale, input_img_blur, input_img_binary;
+    cv::Mat previous_img_greyscale, previous_img_blur, previous_img_binary;
 
     // prepare images in the format of greyscale, blurred and binary
-    prepareImage(model_img, model_img_greyscale, model_img_blur,
-                 model_img_binary);
-    prepareImage(src_img, src_img_greyscale, src_img_blur, src_img_binary);
-    prepareImage(last_img, last_img_greyscale, last_img_blur, last_img_binary);
+    prepareImage(input_img, input_img_greyscale, input_img_blur,
+                 input_img_binary);
+    prepareImage(previous_img, previous_img_greyscale, previous_img_blur,
+                 previous_img_binary);
 
     // initialise the result plot
-    cv::Mat result_plot = cv::Mat(src_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    cv::Mat result_plot =
+        cv::Mat(input_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
 
     // draw target contour
-    drawTargetContours(model_img_binary, result_plot);
+    drawTargetContours(template_img_binary, result_plot);
     // get target board centre and radius
     float radius;
     cv::Point target_centre = cv::Point(0, 0);
-    getTargetCentreRadi(model_img_greyscale, target_centre, radius);
+    getTargetCentreRadi(template_img_greyscale, target_centre, radius);
     // get shot contours
     std::vector<std::vector<cv::Point>> shot_contours;
-    getShotContours(src_img_blur, last_img_blur, shot_contours);
+    getShotContours(input_img_blur, previous_img_blur, shot_contours);
     // get shot location
     cv::Point shot_location = cv::Point(0, 0);
     getShotLocation(shot_contours, shot_location);
-    this->score = computeScore(target_centre, shot_location, radius);
+    score = computeScore(target_centre, shot_location, radius);
 
     // stringstream for string concatnations
     std::stringstream ss;
@@ -114,14 +116,14 @@ void ShotTracking::prepareImage(cv::Mat &img,
 }
 
 void ShotTracking::getShotContours(
-    cv::Mat &src_img_blur,
-    cv::Mat &last_img_blur,
+    cv::Mat &input_img_blur,
+    cv::Mat &previous_img_blur,
     std::vector<std::vector<cv::Point>> &shot_contours) {
 
     cv::Mat img_diff;
 
     // calculate differences
-    cv::absdiff(src_img_blur, last_img_blur, img_diff);
+    cv::absdiff(input_img_blur, previous_img_blur, img_diff);
 
     // convert the diff image into binary format
     cv::threshold(img_diff, img_diff, 150, 255, cv::THRESH_BINARY);
@@ -131,31 +133,31 @@ void ShotTracking::getShotContours(
                      cv::CHAIN_APPROX_SIMPLE);
 }
 
-void ShotTracking::drawTargetContours(cv::Mat &model_img_binary,
+void ShotTracking::drawTargetContours(cv::Mat &template_img_binary,
                                       cv::Mat &result_plot) {
-    std::vector<std::vector<cv::Point>> model_img_contours;
+    std::vector<std::vector<cv::Point>> template_img_contours;
     // detect contour from the target model
-    cv::findContours(model_img_binary, model_img_contours, cv::RETR_LIST,
+    cv::findContours(template_img_binary, template_img_contours, cv::RETR_LIST,
                      cv::CHAIN_APPROX_SIMPLE);
 
     // loop through contours detected from the binary image
-    for (size_t idx = 0; idx < model_img_contours.size(); idx++) {
+    for (size_t idx = 0; idx < template_img_contours.size(); idx++) {
         // polygon approximations
         std::vector<cv::Point> approx;
-        cv::approxPolyDP(model_img_contours[idx], approx,
-                         0.01 * cv::arcLength(model_img_contours[idx], true),
+        cv::approxPolyDP(template_img_contours[idx], approx,
+                         0.01 * cv::arcLength(template_img_contours[idx], true),
                          true);
 
         // detect other irregular shapes (numbers, circles)
         if (approx.size() >= 10 and
-            cv::contourArea(model_img_contours[idx]) > 10) {
-            cv::drawContours(result_plot, model_img_contours, idx, util::GREY,
-                             3);
+            cv::contourArea(template_img_contours[idx]) > 10) {
+            cv::drawContours(result_plot, template_img_contours, idx,
+                             util::GREY, 3);
         }
     }
 }
 
-void ShotTracking::getTargetCentreRadi(cv::Mat &model_img_greyscale,
+void ShotTracking::getTargetCentreRadi(cv::Mat &template_img_greyscale,
                                        cv::Point &target_centre,
                                        float &radius) {
     // detecting circle
@@ -163,7 +165,7 @@ void ShotTracking::getTargetCentreRadi(cv::Mat &model_img_greyscale,
 
     // blur the model again with diff params for detecting circles
     cv::Mat img_blur_tmp;
-    cv::blur(model_img_greyscale, img_blur_tmp, cv::Size(3, 3));
+    cv::blur(template_img_greyscale, img_blur_tmp, cv::Size(3, 3));
 
     int max_radii = 0, n = 1;
 

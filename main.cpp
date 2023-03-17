@@ -10,9 +10,9 @@ int main(int argc, char const *argv[]) {
     // align_image->outlineShapeAlignment();
 
     // TODO get input images path as command argument
-    ShotTracking *st = new ShotTracking();
-    st->getResultPlot("../input_images/group_1/aligned/aligned_shot_0.JPG",
-                      "../input_images/group_1/aligned/aligned_shot_3.JPG",
+    ShotTracking *st =
+        new ShotTracking("../input_images/group_1/aligned/aligned_shot_0.JPG");
+    st->getResultPlot("../input_images/group_1/aligned/aligned_shot_3.JPG",
                       "../input_images/group_1/aligned/aligned_shot_2.JPG");
     std::cout << "score = " << st->score << std::endl;
     delete st;

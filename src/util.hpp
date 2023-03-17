@@ -17,14 +17,16 @@ const cv::Scalar WHITE = cv::Scalar(255, 255, 255);
 const cv::Scalar BLACK = cv::Scalar(0, 0, 0);
 const cv::Scalar BACKGROUND = cv::Scalar(32, 32, 32);
 
-void drawPolyDP(cv::Mat &img, std::vector<cv::Point> &approximation, cv::Scalar color,
+void drawPolyDP(cv::Mat &img,
+                std::vector<cv::Point> &approximation,
+                cv::Scalar color,
                 int thickness = 3);
 bool imageExists(std::string img_path);
 void getContourCentre(std::vector<cv::Point> &contour, cv::Point &centre);
-void filterImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur,
+void filterImage(cv::Mat &img,
+                 cv::Mat &img_greyscale,
+                 cv::Mat &img_blur,
                  cv::Mat &img_thresh);
-// void prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur,
-// cv::Mat &img_thresh);
-};   // namespace util
+};   // end namespace util
 
-#endif
+#endif   // end UTIL_H

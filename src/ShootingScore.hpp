@@ -3,10 +3,10 @@
 
 #include "util.hpp"
 #include <iomanip>
+#include <stdexcept>
 
-class ShootingScore
-{
-private:
+class ShootingScore {
+  private:
     /* data */
     cv::Mat src_img;
     cv::Mat src_img_greyscale;
@@ -26,17 +26,19 @@ private:
     std::vector<std::vector<cv::Point>> model_img_contours;
     std::vector<std::vector<cv::Point>> shot_contours;
 
-    void prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur, cv::Mat &img_thresh);
+    void prepareImage(cv::Mat &img, cv::Mat &img_greyscale, cv::Mat &img_blur,
+                      cv::Mat &img_thresh);
 
-public:
+  public:
     cv::Point target_centre;
     cv::Point shot_location;
     cv::Mat result_plot;
-    double total_radius;
-    double shot_distance;
-    double score;
+    float total_radius;
+    float shot_distance;
+    float score;
 
-    ShootingScore(std::string model_img_path, std::string src_img_path, std::string last_img_path);
+    ShootingScore(std::string model_img_path, std::string src_img_path,
+                  std::string last_img_path);
     ~ShootingScore();
 
     void getShotContours();
@@ -44,8 +46,6 @@ public:
     void detectTargetBoard();
     void drawShootingResult();
     void computeShotLocation();
-    // TODO uses target centre and shot contours to compute the score...
-    // or consider using the radius
     void computeShootingScore();
 };
 

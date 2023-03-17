@@ -14,6 +14,8 @@ ImageAlignment::ImageAlignment(std::string input_img_path,
     // prepare the input image for shape detection
     util::filterImage(input_img, input_img_greyscale, input_img_blur,
                       input_img_thresh);
+    util::filterImage(reference_img, reference_img_greyscale,
+                      reference_img_blur, reference_img_thresh);
     // prepare the reference image for ORB only
     cv::cvtColor(reference_img, reference_img_greyscale, cv::COLOR_BGR2GRAY);
 }
@@ -25,9 +27,9 @@ int ImageAlignment::orbFeatureExtractionAlignment() {
     cv::Mat input_img_descriptors, reference_img_descriptors;
     cv::Ptr<cv::ORB> orb_detector = cv::ORB::create();
 
-    orb_detector->detectAndCompute(input_img_greyscale, cv::Mat(),
+    orb_detector->detectAndCompute(input_img_blur, cv::Mat(),
                                    input_img_keypoints, input_img_descriptors);
-    orb_detector->detectAndCompute(reference_img_greyscale, cv::Mat(),
+    orb_detector->detectAndCompute(reference_img_blur, cv::Mat(),
                                    reference_img_keypoints,
                                    reference_img_descriptors);
 
@@ -163,7 +165,7 @@ int ImageAlignment::outlineShapeAlignment() {
                         cv::Size(OUTPUT_IMG_SIZE, OUTPUT_IMG_SIZE));
     cv::imshow("aligned", output_img_shape_aligned);
     // cv::imwrite("../output/output_img_shape_aligned.png",
-    // output_img_shape_aligned);
+    //             output_img_shape_aligned);
     cv::waitKey(0);
     cv::destroyAllWindows();
 

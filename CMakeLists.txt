@@ -8,7 +8,7 @@ project(shooting_score)
 
 # set OpenCV_DIR variable equal to the path to the cmake
 # files within the previously installed opencv program
-set(OpenCV_DIR /opt/homebrew/Cellar/opencv/4.5.5_2/include/opencv4)
+set(OpenCV_DIR /opt/homebrew/Cellar/opencv/4.7.0_2/include/opencv4)
 
 # Tell compiler to use C++ 14 features which is needed because
 # Clang version is often behind in the XCode installation

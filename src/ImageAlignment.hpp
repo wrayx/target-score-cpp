@@ -21,8 +21,10 @@ class ImageAlignment {
     cv::Mat input_img_thresh;
     cv::Mat reference_img;
     cv::Mat reference_img_greyscale;
+    cv::Mat reference_img_blur;
+    cv::Mat reference_img_thresh;
 
-    const float MATCH_RATIO = 0.8f;
+    const float MATCH_RATIO = 0.7f;
 
   public:
     cv::Mat output_img_orb_aligned, output_img_shape_aligned;

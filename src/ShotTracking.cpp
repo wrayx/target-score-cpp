@@ -33,8 +33,7 @@ void ShotTracking::getResultPlot(std::string input_img_path,
                  previous_img_binary);
 
     // initialise the result plot
-    cv::Mat result_plot =
-        cv::Mat(input_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
+    result_plot = cv::Mat(input_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
 
     // draw target contour
     drawTargetContours(template_img_binary, result_plot);
@@ -115,25 +114,7 @@ void ShotTracking::prepareImage(cv::Mat &img,
     util::filterImage(img, img_greyscale, img_blur, img_binary);
 }
 
-void ShotTracking::getShotContours(
-    cv::Mat &input_img_blur,
-    cv::Mat &previous_img_blur,
-    std::vector<std::vector<cv::Point>> &shot_contours) {
-
-    cv::Mat img_diff;
-
-    // calculate differences
-    cv::absdiff(input_img_blur, previous_img_blur, img_diff);
-
-    // convert the diff image into binary format
-    cv::threshold(img_diff, img_diff, 150, 255, cv::THRESH_BINARY);
-
-    // obtain contours of the shot
-    cv::findContours(img_diff, shot_contours, cv::RETR_LIST,
-                     cv::CHAIN_APPROX_SIMPLE);
-}
-
-void ShotTracking::drawTargetContours(cv::Mat &template_img_binary,
+void ShotTracking::drawTargetContours(cv::Mat template_img_binary,
                                       cv::Mat &result_plot) {
     std::vector<std::vector<cv::Point>> template_img_contours;
     // detect contour from the target model
@@ -157,7 +138,7 @@ void ShotTracking::drawTargetContours(cv::Mat &template_img_binary,
     }
 }
 
-void ShotTracking::getTargetCentreRadi(cv::Mat &template_img_greyscale,
+void ShotTracking::getTargetCentreRadi(cv::Mat template_img_greyscale,
                                        cv::Point &target_centre,
                                        float &radius) {
     // detecting circle
@@ -172,12 +153,9 @@ void ShotTracking::getTargetCentreRadi(cv::Mat &template_img_greyscale,
     while (max_radii <= 800) {
 
         cv::HoughCircles(
-            img_blur_tmp, circles, cv::HOUGH_GRADIENT, 1,
-            img_blur_tmp.rows / 1,   // change this value to detect circles with
-                                     // different distances to each other
+            img_blur_tmp, circles, cv::HOUGH_GRADIENT, 1, img_blur_tmp.rows / 1,
             200, 200, 200,
-            max_radii   // change the last parameter
-                        // max_radius to detect larger or smaller circles
+            max_radii   // change the max_radius to detect larger circles
         );
 
         for (size_t i = 0; i < circles.size(); i++) {
@@ -193,9 +171,27 @@ void ShotTracking::getTargetCentreRadi(cv::Mat &template_img_greyscale,
     }
 }
 
+void ShotTracking::getShotContours(
+    cv::Mat input_img_blur,
+    cv::Mat previous_img_blur,
+    std::vector<std::vector<cv::Point>> &shot_contours) {
+
+    cv::Mat img_diff;
+
+    // calculate differences
+    cv::absdiff(input_img_blur, previous_img_blur, img_diff);
+
+    // convert the diff image into binary format
+    cv::threshold(img_diff, img_diff, 150, 255, cv::THRESH_BINARY);
+
+    // obtain contours of the shot
+    cv::findContours(img_diff, shot_contours, cv::RETR_LIST,
+                     cv::CHAIN_APPROX_SIMPLE);
+}
+
 /* uses shot contours to cumpute the shot location */
 void ShotTracking::getShotLocation(
-    std::vector<std::vector<cv::Point>> &shot_contours,
+    std::vector<std::vector<cv::Point>> shot_contours,
     cv::Point &shot_location) {
     // compute the shot centre as the centre of an irrigular shape
     for (auto &&contour : shot_contours) {

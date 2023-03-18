@@ -18,10 +18,12 @@ class ImageAlignment {
 
   public:
     cv::Mat input_img, aligned_img;
-    ImageAlignment(std::string input_img_path);
+    ImageAlignment();
     ~ImageAlignment();
-    int orbFeatureExtractionAlignment(std::string reference_img_path);
-    int outlineShapeAlignment();
+    void processInputImage(std::string input_img_path);
+    void orbFeatureExtractionAlignment(std::string input_img_path,
+                                       std::string reference_img_path);
+    void contourShapeAlignment(std::string input_img_path);
 };
 
 #endif

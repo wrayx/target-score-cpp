@@ -1,6 +1,10 @@
 #include "ImageAlignment.hpp"
 
-ImageAlignment::ImageAlignment(std::string input_img_path) {
+ImageAlignment::ImageAlignment() {}
+
+ImageAlignment::~ImageAlignment() {}
+
+void ImageAlignment::processInputImage(std::string input_img_path) {
     if (!util::imageExists(input_img_path)) {
         throw std::invalid_argument("invalid input image path");
     }
@@ -13,10 +17,9 @@ ImageAlignment::ImageAlignment(std::string input_img_path) {
                       input_img_binary);
 }
 
-ImageAlignment::~ImageAlignment() {}
-
-int ImageAlignment::orbFeatureExtractionAlignment(
-    std::string reference_img_path) {
+void ImageAlignment::orbFeatureExtractionAlignment(
+    std::string input_img_path, std::string reference_img_path) {
+    processInputImage(input_img_path);
 
     if (!util::imageExists(reference_img_path)) {
         throw std::invalid_argument("invalid input image path");
@@ -24,19 +27,17 @@ int ImageAlignment::orbFeatureExtractionAlignment(
 
     // read images from path
     cv::Mat reference_img = cv::imread(reference_img_path);
-    cv::Mat reference_img_greyscale, reference_img_blur, reference_img_binary;
-
-    // prepare the reference image for shape detection
-    util::filterImage(reference_img, reference_img_greyscale,
-                      reference_img_blur, reference_img_binary);
+    // prepare the reference image for ORB
+    cv::Mat reference_img_greyscale;
+    cv::cvtColor(reference_img, reference_img_greyscale, cv::COLOR_BGR2GRAY);
 
     // ORB feature extraction
     std::vector<cv::KeyPoint> input_img_keypoints, reference_img_keypoints;
     cv::Mat input_img_descriptors, reference_img_descriptors;
     cv::Ptr<cv::ORB> orb_detector = cv::ORB::create();
-    orb_detector->detectAndCompute(input_img_blur, cv::Mat(),
+    orb_detector->detectAndCompute(input_img_greyscale, cv::Mat(),
                                    input_img_keypoints, input_img_descriptors);
-    orb_detector->detectAndCompute(reference_img_blur, cv::Mat(),
+    orb_detector->detectAndCompute(reference_img_greyscale, cv::Mat(),
                                    reference_img_keypoints,
                                    reference_img_descriptors);
 
@@ -58,7 +59,7 @@ int ImageAlignment::orbFeatureExtractionAlignment(
     cv::Mat imMatches;
     cv::drawMatches(input_img, input_img_keypoints, reference_img,
                     reference_img_keypoints, matches, imMatches);
-    // cv::imwrite("../output/orb_match.png", imMatches);
+    // cv::imwrite("../output/orb_match_group4.png", imMatches);
     // cv::imshow("matches", imMatches);
     // cv::waitKey(0);
     // cv::destroyAllWindows();
@@ -77,11 +78,10 @@ int ImageAlignment::orbFeatureExtractionAlignment(
     cv::warpPerspective(input_img, aligned_img, homography,
                         reference_img.size());
     // cv::imwrite("../output/orb_warped.png", aligned_img);
-
-    return 0;
 }
 
-int ImageAlignment::outlineShapeAlignment() {
+void ImageAlignment::contourShapeAlignment(std::string input_img_path) {
+    processInputImage(input_img_path);
     std::vector<std::vector<cv::Point>> input_img_contours, square_contours;
     cv::Mat quadrilaterals_plot(input_img.size(), CV_8UC3, cv::Scalar(0, 0, 0));
     std::vector<cv::Vec4i> hierarchy;
@@ -157,6 +157,4 @@ int ImageAlignment::outlineShapeAlignment() {
     // warp perspective onto the output image shape
     cv::warpPerspective(input_img, aligned_img, homography,
                         cv::Size(OUTPUT_IMG_SIZE, OUTPUT_IMG_SIZE));
-
-    return 0;
 }

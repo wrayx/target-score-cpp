@@ -54,15 +54,22 @@ void ShotTracking::getResultPlot(std::string input_img_path,
 
     // draw target centre
     cv::circle(result_plot, target_centre, 2, util::WHITE, 3, cv::LINE_AA);
+    cv::circle(template_img, target_centre, 2, util::DARK_RED, 3, cv::LINE_AA);
 
     // add target centre location values
     ss << "CENTRE (" << target_centre.x << ", " << target_centre.y << ")";
     cv::putText(result_plot, ss.str(),
                 cv::Point(target_centre.x + 20, target_centre.y),
                 cv::FONT_HERSHEY_SIMPLEX, 1, util::WHITE, 3);
+    cv::putText(template_img, ss.str(),
+                cv::Point(target_centre.x + 20, target_centre.y),
+                cv::FONT_HERSHEY_SIMPLEX, 1, util::DARK_RED, 3);
 
     // draw outermost circle on result_plot
     cv::circle(result_plot, target_centre, radius, util::WHITE, 4, cv::LINE_AA);
+    cv::circle(template_img, target_centre, radius, util::DARK_RED, 4,
+               cv::LINE_AA);
+    cv::imwrite("../output/outter_most.png", template_img);
 
     // if the there is a valid score, draw it out on result plot
     if (score != 0) {

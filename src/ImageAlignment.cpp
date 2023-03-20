@@ -15,6 +15,7 @@ void ImageAlignment::processInputImage(std::string input_img_path) {
     // prepare the input image for shape detection
     util::filterImage(input_img, input_img_greyscale, input_img_blur,
                       input_img_binary);
+    // cv::imwrite("../output/input_original_blurred.png", input_img_blur);
 }
 
 void ImageAlignment::orbFeatureExtractionAlignment(
@@ -89,14 +90,13 @@ void ImageAlignment::contourShapeAlignment(std::string input_img_path) {
     // detect contours from the input image
     cv::findContours(input_img_binary, input_img_contours, cv::RETR_LIST,
                      cv::CHAIN_APPROX_SIMPLE);
-
+    // cv::imwrite("../output/binary_input.png", input_img_binary);
     // loop through contours, find quadrilaterals
     for (size_t idx = 0; idx < input_img_contours.size(); idx++) {
         std::vector<cv::Point> approx;
         cv::approxPolyDP(input_img_contours[idx], approx,
                          0.05 * cv::arcLength(input_img_contours[idx], true),
                          true);
-
         if (cv::contourArea(input_img_contours[idx]) > 1000) {
             // detect quadrilaterals, contour with 4 corners
             if (approx.size() == 4) {
@@ -154,6 +154,7 @@ void ImageAlignment::contourShapeAlignment(std::string input_img_path) {
     // findHomography from the input image
     cv::Mat homography;
     homography = cv::findHomography(board_corners, output_corners, cv::RANSAC);
+
     // warp perspective onto the output image shape
     cv::warpPerspective(input_img, aligned_img, homography,
                         cv::Size(OUTPUT_IMG_SIZE, OUTPUT_IMG_SIZE));

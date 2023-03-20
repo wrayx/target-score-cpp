@@ -7,7 +7,7 @@ int main(int argc, char const *argv[]) {
     // align_image->orbFeatureExtractionAlignment(
     //     "../input_images/group_1/shot_1.JPG",
     //     "../input_images/group_1/aligned/aligned_shot_0.JPG");
-    // align_image->contourShapeAlignment("../input_images/group_1/shot_1.JPG");
+    align_image->contourShapeAlignment("../input_images/group_1/shot_1.JPG");
     cv::imshow("wraped perspective", align_image->aligned_img);
     cv::waitKey(0);
     cv::destroyAllWindows();
@@ -20,5 +20,5 @@ int main(int argc, char const *argv[]) {
     //                   "../input_images/group_1/aligned/aligned_shot_2.JPG");
     // std::cout << "score = " << st->score << std::endl;
     // delete st;
-    return 0;
+    // return 0;
 }

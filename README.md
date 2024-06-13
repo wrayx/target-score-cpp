@@ -16,11 +16,11 @@ Run program
 ```
 
 More specific information about the environment set up can be found here: [Configure the VSCode Environment for C++ on MacOS
-](https://wrayx.uk/posts/configure-vscode-env-for-cpp-on-macos/)
+](https://wray.blog/posts/configure-vscode-env-for-cpp-on-macos/)
 
 ### Notes
 
-The project and documentation are still under development. The drafted doc can be viewed from here: [wrayx.uk - A Visual Based Shot Tracking System For Target Shooting](https://wrayx.uk/posts/shot-tracking-system/)
+The project and documentation are still under development. The drafted doc can be viewed from here: [wray.blog - A Visual Based Shot Tracking System For Target Shooting](https://wray.blog/posts/shot-tracking-system/)
 
 Currently, the detection algorithms are implemented using the openCV library. But we are working on implementing some of the methods from scratch so that the programme can run faster and be better tailored to this specific application scenario.
 

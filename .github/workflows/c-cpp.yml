@@ -9,17 +9,15 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v2
 
     - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y cmake g++ libopencv-dev
+      run: sudo apt-get install -y cmake libopencv-dev
 
-    - name: Configure
-      run: ./configure
+    - name: Configure CMake Build
+      run: cmake -S . -B build
 
-    - name: Make
-      run: make
+    - name: Build
+      run: cmake --build build
